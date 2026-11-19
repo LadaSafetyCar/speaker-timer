@@ -300,6 +300,29 @@ async function run() {
     }, device));
   }
 
+  for (const [label, query] of [['10-minute countdown (current)', ''], ['10-minute countdown with ?start959 preview', '?start959']]) {
+    await T(label, async () => {
+      const { ctx, page } = await openApp(browser, base + query);
+      try {
+        await configure(page, { dir: 'down', times: { min: 300, amber: 480, max: 600 } });
+        const size = () => page.evaluate(() => parseFloat(document.getElementById('clock-text').style.fontSize));
+        const readyText = (await state(page)).text, readySize = await size();
+        await tapOrClick(page, '#startpause-btn');
+        const seen = []; const sizes = new Set([readySize]); let t = 0;
+        for (const at of [0, 1, 2, 3, 300, 480, 599, 600]) { await tick(page, at - t); t = at; const st = await state(page); seen.push(`${st.text} ${st.sig}`); sizes.add(await size()); }
+        if (query) {
+          eq(readyText, '9:59', 'ready clock shows 9:59');
+          eq(seen, ['9:59 idle', '9:59 idle', '9:58 idle', '9:57 idle', '5:00 green', '2:00 amber', '0:01 amber', '0:00 red'], 'holds 9:59 for 2 s, red at exactly 10:00');
+          eq(sizes.size, 1, 'digit size never changes');
+        } else {
+          eq(readyText, '10:00', 'ready clock shows 10:00');
+          eq(seen, ['10:00 idle', '9:59 idle', '9:58 idle', '9:57 idle', '5:00 green', '2:00 amber', '0:01 amber', '0:00 red'], 'counts 10:00 down to 0:00, red at 10:00');
+          check(sizes.size === 2, 'digits grow once when 10:00 becomes 9:59 (known, the reason for the preview)', `sizes ${[...sizes].join(', ')}`);
+        }
+      } finally { allProblems.push(...page.problems.map(p => `[${current}] ${p}`)); await ctx.close(); }
+    });
+  }
+
   await T('Long run keeps exact time', () => fresh(async page => {
     await configure(page, { dir: 'up', times: { min: 60, amber: 120, max: 180 } });
     await tapOrClick(page, '#startpause-btn');

@@ -169,6 +169,15 @@ function setPhase(p) {
   disarmReset();
 }
 
+// PREVIEW (only with ?start959 in the address): a 10:00 countdown shows 9:59 until it
+// really reaches 9:59, so the clock is never drawn with five characters and keeps its full
+// size from the start. Red still comes at exactly 10:00 of speaking time.
+const START_959 = new URLSearchParams(location.search).has('start959');
+function countdownText(remaining, max) {
+  const r = Math.max(0, remaining);
+  return fmt(START_959 && max === 600 ? Math.min(r, 599) : r);
+}
+
 const DIGIT_EM = 0.68;  // widest Poppins Bold digit
 const COLON_EM = 0.3;
 function setClock(text) {
@@ -187,7 +196,7 @@ function setClock(text) {
 function renderReady() {
   main.dataset.mode = state.mode;
   const c = currentCfg();
-  setClock(!c || state.dir === 'up' ? '0:00' : fmt(c.max));
+  setClock(!c || state.dir === 'up' ? '0:00' : countdownText(c.max, c.max));
   applySignal('idle'); run.lastSig = '';
   const conf = state.mode === 'conference';
   $('timer-label').textContent = conf ? (c ? cfgLabel(c) : 'The agenda is empty') : '';
@@ -259,7 +268,7 @@ function startTimer() {
 
 function render() {
   const el = elapsedSec();
-  setClock(run.dir === 'down' ? fmt(Math.max(0, run.cfg.max - el)) : fmt(el));
+  setClock(run.dir === 'down' ? countdownText(run.cfg.max - el, run.cfg.max) : fmt(el));
   const sig = shownSignal(signalFor(el, run.t));
   if (sig !== run.lastSig) { applySignal(sig); run.lastSig = sig; }
 }
