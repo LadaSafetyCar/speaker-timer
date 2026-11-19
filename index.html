@@ -40,11 +40,64 @@
 <!--APP-START-->
 <div id="app">
 
-  <!-- ============ SETUP ============ -->
-  <section id="setup-view" class="view">
-    <header class="setup-head">
-      <h1 class="brand"><span class="brand-lights" aria-hidden="true"><i></i><i></i><i></i></span>Speaker Timer</h1>
+  <!-- ============ MAIN: the speaker-facing clock (start-up screen) ============ -->
+  <section id="main-view" class="view" data-phase="ready">
+    <header class="main-top">
+      <div class="slot-nav">
+        <button type="button" id="prev-slot" class="icon-btn ready-only" aria-label="Previous slot">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div id="timer-label" class="timer-label"></div>
+        <button type="button" id="next-slot" class="icon-btn ready-only" aria-label="Next slot">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <button type="button" id="settings-btn" class="icon-btn ready-only" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </header>
 
+    <div id="paused-badge" class="paused-badge" hidden>Paused</div>
+    <div class="clock"><span id="clock-text">7:00</span></div>
+
+    <footer class="main-bottom">
+      <div id="ready-info" class="ready-info ready-only"></div>
+      <div class="timer-controls">
+        <button type="button" id="reset-btn" class="ctl" aria-label="Reset">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M3 3v5h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="ctl-text">Reset</span>
+        </button>
+        <button type="button" id="stop-btn" class="ctl" aria-label="Stop">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/></svg>
+          <span class="ctl-text">Stop</span>
+        </button>
+        <button type="button" id="startpause-btn" class="ctl ctl-primary" aria-label="Start">
+          <svg viewBox="0 0 24 24" aria-hidden="true"></svg>
+          <span class="ctl-text">Start</span>
+        </button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section id="settings-view" class="view" data-mode="simple">
+    <header class="settings-head">
+      <div>
+        <p class="brand-line"><span class="brand-lights" aria-hidden="true"><i></i><i></i><i></i></span>Speaker Timer</p>
+        <h1>Settings</h1>
+      </div>
+      <button type="button" id="done-btn" class="primary">Done</button>
+    </header>
+
+    <div id="install-tip" class="install-tip" hidden>
+      <p><b>Install on this iPad:</b> tap <span class="share-glyph" aria-label="Share">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Share, then <b>Add to Home Screen</b>. It then opens full screen, works with no Wi-Fi and keeps your settings.</p>
+      <button type="button" id="install-tip-close" class="del" aria-label="Dismiss">×</button>
+    </div>
+
+    <section class="card">
+      <h2 class="eyebrow">Timer</h2>
       <div class="toggles">
         <div class="seg" role="radiogroup" aria-label="Mode">
           <button type="button" id="mode-simple" role="radio" data-mode="simple">Simple</button>
@@ -55,88 +108,57 @@
           <button type="button" id="dir-up" role="radio" data-dir="up">Count up</button>
         </div>
       </div>
-    </header>
+      <p id="dir-hint" class="hint"></p>
+    </section>
 
-    <p id="dir-hint" class="hint"></p>
-
-    <div id="install-tip" class="install-tip" hidden>
-      <p><b>Install on this iPad:</b> tap <span class="share-glyph" aria-label="Share">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        Share, then <b>Add to Home Screen</b>. It then opens full screen, works with no Wi-Fi and keeps your agenda.</p>
-      <button type="button" id="install-tip-close" class="del" aria-label="Dismiss">×</button>
-    </div>
-
-    <!-- Simple mode -->
-    <div id="simple-panel" class="panel">
-      <div class="simple-card">
-        <div class="time-field">
-          <label for="s-min-mm" class="tlabel tl-green">Green at (min)</label>
-          <div class="mmss">
-            <input id="s-min-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Minimum minutes">
-            <span>:</span>
-            <input id="s-min-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Minimum seconds">
-          </div>
+    <section class="card">
+      <h2 class="eyebrow">Colours and times</h2>
+      <div class="sig-rows">
+        <div class="sig-row" data-row="green">
+          <label class="sig-check"><input type="checkbox" id="sig-green" data-sig="green"><b class="dot d-green"></b>Green</label>
+          <div class="mmss big simple-only"><input id="s-min-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Green minutes"><span>:</span><input id="s-min-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Green seconds"></div>
+          <span class="sig-desc"><span class="simple-only">Minimum time reached</span><span class="conf-only">At each slot’s min time</span></span>
         </div>
-        <div class="time-field">
-          <label for="s-max-mm" class="tlabel tl-red">Red at (max)</label>
-          <div class="mmss">
-            <input id="s-max-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Maximum minutes">
-            <span>:</span>
-            <input id="s-max-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Maximum seconds">
-          </div>
+        <div class="sig-row" data-row="amber">
+          <label class="sig-check"><input type="checkbox" id="sig-amber" data-sig="amber"><b class="dot d-amber"></b>Amber</label>
+          <div class="mmss big simple-only"><input id="s-amb-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Amber minutes"><span>:</span><input id="s-amb-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Amber seconds"></div>
+          <span class="sig-desc"><span class="simple-only">Time to start wrapping up</span><span class="conf-only">At each slot’s amber time</span></span>
         </div>
-        <button type="button" id="simple-start" class="primary big-start">Start</button>
+        <div class="sig-row" data-row="red">
+          <label class="sig-check"><input type="checkbox" id="sig-red" data-sig="red"><b class="dot d-red"></b>Red</label>
+          <div class="mmss big simple-only"><input id="s-max-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Red minutes"><span>:</span><input id="s-max-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Red seconds"></div>
+          <span class="sig-desc"><span class="simple-only">Maximum time. Count down starts here.</span><span class="conf-only">At each slot’s max time</span></span>
+        </div>
+        <div class="sig-row" data-row="bell">
+          <label class="sig-check"><input type="checkbox" id="sig-bell" data-sig="bell"><b class="dot d-bell"></b>Flashing</label>
+          <div class="secs big"><input id="bell-after" inputmode="numeric" maxlength="3" aria-label="Seconds after red"><span>s</span></div>
+          <span class="sig-desc">After red</span>
+        </div>
       </div>
+      <p class="muted small">Untick a colour to skip it. The screen keeps the colour before it.</p>
+    </section>
 
-      <div class="recents-wrap">
-        <h2 class="eyebrow">Recent timers</h2>
-        <div id="recents" class="recents"></div>
-        <p id="recents-empty" class="muted small">Timers you start show up here. The last four unique ones are kept.</p>
-      </div>
-    </div>
+    <section class="card simple-only">
+      <h2 class="eyebrow">Recent timers</h2>
+      <div id="recents" class="recents"></div>
+      <p id="recents-empty" class="muted small">Timers you start show up here. The last four unique ones are kept.</p>
+    </section>
 
-    <!-- Conference mode -->
-    <div id="conference-panel" class="panel">
+    <section class="card conf-only">
+      <h2 class="eyebrow">Agenda</h2>
+      <p class="muted small agenda-help">Tap a slot to make it the next one on the clock. On the clock screen, ‹ and › move between slots.</p>
       <div class="agenda-head">
-        <span>Role</span><span>Name</span><span class="c-green">Min</span><span class="c-red">Max</span><span>Used</span><span></span>
+        <span>Role</span><span>Name</span><span class="c-green">Min</span><span class="c-amber">Amber</span><span class="c-red">Max</span><span>Used</span><span></span>
       </div>
       <ol id="agenda" class="agenda"></ol>
-
       <div class="agenda-actions">
         <button type="button" id="add-slot" class="ghost">+ Add slot</button>
-        <button type="button" id="conf-start" class="primary">Start selected</button>
         <span class="spacer"></span>
         <button type="button" id="export-btn" class="ghost small-btn">Save file</button>
         <label class="ghost small-btn file-btn">Load file<input type="file" id="import-input" accept=".json,application/json" hidden></label>
         <button type="button" id="reset-agenda" class="ghost small-btn danger">Reset agenda</button>
       </div>
-    </div>
-
-    <footer class="legend">
-      <h2 class="eyebrow">Colour signals shown to the speaker</h2>
-      <div class="sig-toggles" role="group" aria-label="Colour signals">
-        <label class="sig-toggle"><input type="checkbox" id="sig-green" data-sig="green"><b class="dot d-green"></b><span><b>Green</b> at min</span></label>
-        <label class="sig-toggle"><input type="checkbox" id="sig-amber" data-sig="amber"><b class="dot d-amber"></b><span><b>Amber</b> halfway to max</span></label>
-        <label class="sig-toggle"><input type="checkbox" id="sig-red" data-sig="red"><b class="dot d-red"></b><span><b>Red</b> at max</span></label>
-        <label class="sig-toggle"><input type="checkbox" id="sig-bell" data-sig="bell"><b class="dot d-bell"></b><span><b>Flashing</b> 30 s over</span></label>
-      </div>
-      <p class="muted small sig-note">When a colour is off, the screen keeps the colour before it.</p>
-    </footer>
-  </section>
-
-  <!-- ============ TIMER (speaker-facing) ============ -->
-  <section id="timer-view" class="view" aria-live="off">
-    <div id="timer-label" class="timer-label"></div>
-    <div id="clock" class="clock"><span id="clock-text">0:00</span></div>
-    <div class="timer-controls">
-      <button type="button" id="pause-btn" class="tbtn" aria-label="Pause">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-      </button>
-      <button type="button" id="stop-btn" class="tbtn" aria-label="Stop">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
-      </button>
-    </div>
-    <div id="paused-badge" class="paused-badge" hidden>Paused</div>
+    </section>
   </section>
 
   <!-- ============ SUMMARY ============ -->
@@ -146,19 +168,18 @@
       <div id="sum-time" class="sum-time">0:00</div>
       <p id="sum-verdict" class="verdict"></p>
       <dl class="sum-grid">
-        <div><dt>Min</dt><dd id="sum-min"></dd></div>
-        <div><dt>Max</dt><dd id="sum-max"></dd></div>
-        <div><dt>Clock</dt><dd id="sum-dir"></dd></div>
+        <div><dt>Green</dt><dd id="sum-min"></dd></div>
+        <div><dt>Amber</dt><dd id="sum-amb"></dd></div>
+        <div><dt>Red</dt><dd id="sum-max"></dd></div>
       </dl>
       <div class="sum-actions">
         <button type="button" id="resume-btn" class="ghost">Resume timer</button>
         <button type="button" id="again-btn" class="ghost">Restart</button>
-        <button type="button" id="back-btn" class="primary">Back to setup</button>
+        <button type="button" id="back-btn" class="primary">Done</button>
       </div>
     </div>
   </section>
 
-  <!-- In-page confirm -->
   <div id="confirm" class="confirm" hidden>
     <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="confirm-msg">
       <p id="confirm-msg"></p>
@@ -175,8 +196,9 @@
   <li class="slot">
     <input class="role" placeholder="Role" aria-label="Role">
     <input class="name" placeholder="Name" aria-label="Speaker name">
-    <div class="mmss compact"><input class="min-mm mm" inputmode="numeric" maxlength="2" aria-label="Min minutes"><span>:</span><input class="min-ss ss" inputmode="numeric" maxlength="2" aria-label="Min seconds"></div>
-    <div class="mmss compact"><input class="max-mm mm" inputmode="numeric" maxlength="2" aria-label="Max minutes"><span>:</span><input class="max-ss ss" inputmode="numeric" maxlength="2" aria-label="Max seconds"></div>
+    <div class="mmss compact t-min"><input class="min-mm mm" inputmode="numeric" maxlength="2" aria-label="Min minutes"><span>:</span><input class="min-ss ss" inputmode="numeric" maxlength="2" aria-label="Min seconds"></div>
+    <div class="mmss compact t-amb"><input class="amb-mm mm" inputmode="numeric" maxlength="2" aria-label="Amber minutes"><span>:</span><input class="amb-ss ss" inputmode="numeric" maxlength="2" aria-label="Amber seconds"></div>
+    <div class="mmss compact t-max"><input class="max-mm mm" inputmode="numeric" maxlength="2" aria-label="Max minutes"><span>:</span><input class="max-ss ss" inputmode="numeric" maxlength="2" aria-label="Max seconds"></div>
     <div class="used"><span class="used-text">–</span><span class="used-bar"><i></i></span></div>
     <button type="button" class="del" aria-label="Delete slot">×</button>
   </li>

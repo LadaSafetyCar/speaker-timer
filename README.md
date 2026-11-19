@@ -6,17 +6,27 @@ It is plain HTML, CSS and JavaScript. There is no build step, and it works offli
 
 ## Features
 
+- **Opens on the clock.** The start-up screen is the speaker-facing clock, ready to go. Everything else lives behind the **gear (Settings)** in the top-right corner, which hides while a timer runs.
 - **Big clock.** A condensed bold face is fitted to the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits.
-- **Count down or count up**, chosen before you start.
-  - Count down starts at the max time and **holds at 0:00** once the speaker reaches max. The colours keep going: red at max, flashing 30 s later.
-  - Count up shows elapsed time.
-  - Either way, the summary shows the real time taken and how far under or over it was.
-- **Simple mode**: set Green (min) and Red (max), then Start. The last **4 unique** timers (min, max and direction) appear as one-tap presets.
-- **Conference mode**: an editable agenda (role, name, min, max) with time used per slot. After each stop it selects the next slot, ready for the next speaker. The agenda saves itself in the browser, and you can export and import it as a `.json` file.
-- **Signals:** green at min, amber halfway between min and max, red at max, flashing 30 s past max.
-- **Choose the colours:** tick or untick Green, Amber, Red and Flashing at the bottom of the setup screen. When a colour is off, the screen keeps the colour before it. For example, with Amber off it stays green until red. The choice is saved on the device and applies to both modes.
-- **Timer controls:** pause/resume and stop buttons in the corner. On a keyboard, Space pauses and Esc stops.
-- **During a timer:** the screen stays awake (Wake Lock) and the app goes full screen.
+- **Controls** sit bottom-right, with the main action rightmost and away from the clock:
+  - Before a run there is only one button, **Start**.
+  - During a run there are three: **Reset**, **Stop**, and **Pause/Resume**. They fade to half strength so they don't distract the speaker.
+  - **Reset** needs a second tap within 3 s, so a stray touch can't wipe a speech in progress. It returns the clock to its start time without recording anything.
+  - **Stop** ends the run and shows the summary, where **Resume timer** undoes an accidental stop.
+  - **Keyboard:** Space starts or pauses, Esc stops, R resets, and ← → change slot.
+- **Count down or count up** (Settings).
+  - Count down starts at the red (max) time and **holds at 0:00** once the speaker reaches it, while the colours carry on.
+  - The summary always shows the real time taken.
+- **Colours and times** (Settings): each colour has a tick box and its own time.
+  - Green, Amber and Red each have a time. Flashing is set in seconds after red.
+  - Untick a colour to skip it. The screen keeps the colour before it, so with Amber off it stays green until red.
+  - Amber starts halfway between green and red, and stays halfway when those change unless you set it yourself.
+- **Simple mode:** one timer. The last **4 unique** timers are kept as one-tap presets in Settings.
+- **Conference mode:** an editable agenda (role, name, min, amber, max) with time used per slot.
+  - The clock screen shows the current slot, with ‹ › to move between slots.
+  - After each Stop it moves to the next slot.
+  - The agenda saves itself, and you can save and load it as a `.json` file.
+- **During a timer:** the screen stays awake and the app goes full screen.
 
 ## Using it on an iPad
 

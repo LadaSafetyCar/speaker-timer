@@ -9,6 +9,14 @@ function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { /* private mode etc. */ }
 }
 
+const mid = (a, b) => Math.round((a + b) / 2);
+const secs = (v, d = 0) => { const n = parseInt(v, 10); return Number.isFinite(n) && n >= 0 ? n : d; };
+// Older saves have no amber time: put it halfway, as earlier versions did.
+function withAmber(o) {
+  const min = secs(o.min), max = secs(o.max);
+  return { ...o, min, max, amber: Number.isFinite(o.amber) ? o.amber : mid(min, max) };
+}
+
 const DEFAULT_AGENDA = [
   ['Toastmaster of the evening – opening', 120, 180],
   ['Timekeeper introduction', 30, 60],
@@ -29,23 +37,25 @@ const DEFAULT_AGENDA = [
   ['Timekeeper report', 60, 120],
   ['General Evaluator', 180, 300],
   ['Call for volunteers', 60, 180],
-].map(([role, min, max]) => ({ role, name: '', min, max, used: null }));
+].map(([role, min, max]) => ({ role, name: '', min, amber: mid(min, max), max, used: null }));
 
 const saved = load();
 const state = {
   mode: saved.mode === 'conference' ? 'conference' : 'simple',
   dir: saved.dir === 'up' ? 'up' : 'down',
-  simple: saved.simple && Number.isFinite(saved.simple.max) ? saved.simple : { min: 300, max: 420 },
-  recents: Array.isArray(saved.recents) ? saved.recents.slice(0, 4) : [],
-  agenda: Array.isArray(saved.agenda) && saved.agenda.length ? saved.agenda : structuredClone(DEFAULT_AGENDA),
+  simple: withAmber(saved.simple && Number.isFinite(saved.simple.max) ? saved.simple : { min: 300, max: 420 }),
+  recents: Array.isArray(saved.recents) ? saved.recents.slice(0, 4).map(withAmber) : [],
+  agenda: (Array.isArray(saved.agenda) && saved.agenda.length ? saved.agenda : structuredClone(DEFAULT_AGENDA)).map(withAmber),
   selected: Number.isInteger(saved.selected) ? saved.selected : 0,
-  // which colour signals the speaker sees; a switched-off stage keeps the previous colour
+  // which colours the speaker sees; a switched-off stage keeps the previous colour
   signals: { green: true, amber: true, red: true, bell: true, ...(saved.signals || {}) },
+  bellAfter: Number.isFinite(saved.bellAfter) ? saved.bellAfter : 30,
 };
+if (state.selected >= state.agenda.length) state.selected = 0;
 
 /* ================= helpers ================= */
 const $ = (id) => document.getElementById(id);
-const BELL_AFTER = 30; // seconds past max before the screen flashes
+const main = $('main-view');
 
 function fmt(sec) {
   sec = Math.max(0, Math.floor(sec));
@@ -53,36 +63,18 @@ function fmt(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 function readMMSS(mmEl, ssEl) {
-  const m = parseInt(mmEl.value, 10) || 0;
-  const s = parseInt(ssEl.value, 10) || 0;
-  return Math.max(0, m * 60 + s);
+  return Math.max(0, (parseInt(mmEl.value, 10) || 0) * 60 + (parseInt(ssEl.value, 10) || 0));
 }
 function writeMMSS(mmEl, ssEl, sec) {
   mmEl.value = Math.floor(sec / 60);
   ssEl.value = String(sec % 60).padStart(2, '0');
-}
-function thresholds(min, max) {
-  return { green: min, amber: (min + max) / 2, red: max, bell: max + BELL_AFTER };
-}
-const STAGES = ['idle', 'green', 'amber', 'red', 'bell'];
-// Step back from the reached stage to the nearest one that is switched on.
-function shownSignal(sig) {
-  for (let i = STAGES.indexOf(sig); i > 0; i--) if (state.signals[STAGES[i]]) return STAGES[i];
-  return 'idle';
-}
-function signalFor(elapsed, t) {
-  if (elapsed >= t.bell) return 'bell';
-  if (elapsed >= t.red) return 'red';
-  if (elapsed >= t.amber) return 'amber';
-  if (elapsed >= t.green) return 'green';
-  return 'idle';
 }
 let toastTimer;
 function toast(msg) {
   const el = $('toast');
   el.textContent = msg; el.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
 }
 function confirmBox(msg, yesLabel, onYes) {
   const box = $('confirm');
@@ -99,38 +91,347 @@ function bindNumeric(input, isSeconds) {
   input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, ''); });
   input.addEventListener('focus', () => input.select());
   if (isSeconds) input.addEventListener('blur', () => {
-    let v = parseInt(input.value, 10) || 0;
-    input.value = String(Math.min(59, v)).padStart(2, '0');
+    input.value = String(Math.min(59, parseInt(input.value, 10) || 0)).padStart(2, '0');
   });
+}
+
+/* ================= signals ================= */
+const STAGES = ['idle', 'green', 'amber', 'red', 'bell'];
+function thresholds(c) {
+  return { green: c.min, amber: c.amber, red: c.max, bell: c.max + state.bellAfter };
+}
+function signalFor(elapsed, t) {
+  if (elapsed >= t.bell) return 'bell';
+  if (elapsed >= t.red) return 'red';
+  if (elapsed >= t.amber) return 'amber';
+  if (elapsed >= t.green) return 'green';
+  return 'idle';
+}
+// Step back from the reached stage to the nearest one that is switched on.
+function shownSignal(sig) {
+  for (let i = STAGES.indexOf(sig); i > 0; i--) if (state.signals[STAGES[i]]) return STAGES[i];
+  return 'idle';
+}
+function applySignal(sig) {
+  for (const el of [main, document.documentElement]) {
+    el.classList.remove('s-green', 's-amber', 's-red', 's-bell');
+    if (sig !== 'idle') el.classList.add('s-' + sig);
+  }
+}
+
+function currentCfg() {
+  return state.mode === 'conference' ? state.agenda[state.selected] : state.simple;
+}
+function cfgLabel(c) {
+  return state.mode === 'conference' && c ? [c.role, c.name].filter(Boolean).join(' · ') : '';
+}
+function validate(c) {
+  if (!c) { toast('Add a slot to the agenda first'); return false; }
+  if (c.max <= 0) { toast('Set a red (max) time above 0:00'); return false; }
+  const pts = [['Green', c.min, state.signals.green], ['Amber', c.amber, state.signals.amber], ['Red', c.max, true]].filter(p => p[2]);
+  for (let i = 1; i < pts.length; i++) {
+    if (pts[i][1] < pts[i - 1][1]) { toast(`${pts[i - 1][0]} time must not be later than ${pts[i][0].toLowerCase()} time`); return false; }
+  }
+  return true;
+}
+// When amber sat exactly halfway, keep it halfway as min or max change.
+function followMidpoint(old, next) {
+  if (old.amber === mid(old.min, old.max) && next.amber === old.amber && (next.min !== old.min || next.max !== old.max)) {
+    next.amber = mid(next.min, next.max);
+  }
+  return next;
 }
 
 /* ================= views ================= */
 function show(view) {
-  for (const v of ['setup-view', 'timer-view', 'summary-view']) $(v).classList.toggle('active', v === view);
+  for (const v of ['main-view', 'settings-view', 'summary-view']) $(v).classList.toggle('active', v === view);
+  document.documentElement.classList.toggle('timer-on', view === 'main-view');
+  if (view === 'main-view') fitClock();
 }
 
-function renderToggles() {
-  for (const b of document.querySelectorAll('[data-mode]')) b.setAttribute('aria-checked', String(b.dataset.mode === state.mode));
-  for (const b of document.querySelectorAll('[data-dir]')) b.setAttribute('aria-checked', String(b.dataset.dir === state.dir));
-  $('simple-panel').classList.toggle('active', state.mode === 'simple');
-  $('conference-panel').classList.toggle('active', state.mode === 'conference');
-  $('dir-hint').textContent = state.dir === 'down'
-    ? 'Counts down from the max time and holds at 0:00 once the speaker is over. Colours change as normal.'
-    : 'Counts up from 0:00. Colours change at min, halfway and max.';
+/* ================= main clock screen ================= */
+const ICON_PLAY = '<path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/>';
+const ICON_PAUSE = '<rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>';
+
+const run = { phase: 'ready', cfg: null, t: null, dir: 'down', label: '', slotIndex: null, startAt: 0, pausedAt: 0, pausedTotal: 0, tick: null, lastSig: '', stopped: false, stoppedPhase: 'running', prevUsed: null };
+
+function setPhase(p) {
+  run.phase = p;
+  main.dataset.phase = p;
+  const sp = $('startpause-btn');
+  const label = p === 'running' ? 'Pause' : p === 'paused' ? 'Resume' : 'Start';
+  sp.setAttribute('aria-label', label);
+  sp.querySelector('.ctl-text').textContent = label;
+  sp.querySelector('svg').innerHTML = p === 'running' ? ICON_PAUSE : ICON_PLAY;
+  $('paused-badge').hidden = p !== 'paused';
+  disarmReset();
 }
 
-/* ---------- simple mode ---------- */
-const sIn = { minMM: $('s-min-mm'), minSS: $('s-min-ss'), maxMM: $('s-max-mm'), maxSS: $('s-max-ss') };
-bindNumeric(sIn.minMM); bindNumeric(sIn.maxMM); bindNumeric(sIn.minSS, true); bindNumeric(sIn.maxSS, true);
-for (const el of Object.values(sIn)) el.addEventListener('change', () => {
-  state.simple = { min: readMMSS(sIn.minMM, sIn.minSS), max: readMMSS(sIn.maxMM, sIn.maxSS) };
-  save(); renderRecents();
+function setClock(text) {
+  const el = $('clock-text');
+  if (el.textContent === text) return;
+  const lenChanged = el.textContent.length !== text.length;
+  el.textContent = text;
+  if (lenChanged) fitClock();
+}
+
+function renderReady() {
+  const c = currentCfg();
+  setClock(!c || state.dir === 'up' ? '0:00' : fmt(c.max));
+  applySignal('idle'); run.lastSig = '';
+  const conf = state.mode === 'conference';
+  $('timer-label').textContent = conf ? (c ? cfgLabel(c) : 'The agenda is empty') : '';
+  $('prev-slot').hidden = $('next-slot').hidden = !conf;
+  $('prev-slot').disabled = state.selected <= 0;
+  $('next-slot').disabled = state.selected >= state.agenda.length - 1;
+  const items = [];
+  if (c) {
+    for (const [k, t] of [['green', c.min], ['amber', c.amber], ['red', c.max]]) {
+      if (state.signals[k]) items.push(`<span><b class="dot d-${k}"></b>${fmt(t)}</span>`);
+    }
+    if (state.signals.bell) items.push(`<span><b class="dot d-bell"></b>+${state.bellAfter} s</span>`);
+  }
+  items.push(`<span class="ri-dir">${state.dir === 'down' ? 'Count down' : 'Count up'}</span>`);
+  $('ready-info').innerHTML = items.join('');
+}
+
+function moveSlot(step) {
+  const i = state.selected + step;
+  if (run.phase !== 'ready' || i < 0 || i >= state.agenda.length) return;
+  state.selected = i; save(); renderReady(); markSelected();
+}
+
+// Size the digits to fill the screen. The widest digit string of this length decides,
+// so the size does not jump around as digits change.
+function fitClock() {
+  if (!main.classList.contains('active')) return;
+  const txt = $('clock-text');
+  const probe = document.createElement('span');
+  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:100px;line-height:.78;font-weight:700;font-variant-numeric:tabular-nums lining-nums;';
+  probe.style.fontFamily = getComputedStyle(txt).fontFamily;
+  probe.textContent = txt.textContent.replace(/\d/g, '0');
+  document.body.appendChild(probe);
+  const w = probe.getBoundingClientRect().width / 100;  // width in em
+  probe.remove();
+  const byWidth = (window.innerWidth * 0.94) / w;
+  const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
+  txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
+}
+const refit = () => requestAnimationFrame(fitClock);
+window.addEventListener('resize', refit);
+window.addEventListener('orientationchange', () => setTimeout(refit, 250));
+window.visualViewport?.addEventListener('resize', refit);
+document.fonts?.ready.then(refit);
+
+/* ================= timer engine ================= */
+// Elapsed time comes from the clock, not from counting ticks, so it stays accurate
+// even when the browser throttles timers.
+function elapsedSec() {
+  if (!run.startAt) return 0;
+  const now = run.pausedAt || performance.now();
+  return Math.floor((now - run.startAt - run.pausedTotal) / 1000);
+}
+
+function startTimer() {
+  const c = currentCfg();
+  if (!validate(c)) return;
+  const slotIndex = state.mode === 'conference' ? state.selected : null;
+  Object.assign(run, {
+    cfg: { min: c.min, amber: c.amber, max: c.max }, t: thresholds(c), dir: state.dir, label: cfgLabel(c), slotIndex,
+    startAt: performance.now(), pausedAt: 0, pausedTotal: 0, lastSig: '', stopped: false,
+    prevUsed: slotIndex != null ? (c.used ?? null) : null,
+  });
+  if (state.mode === 'simple') { pushRecent(c); save(); }
+  $('timer-label').textContent = run.label;
+  setPhase('running');
+  enterFullscreen();
+  requestWakeLock();
+  render();
+  clearInterval(run.tick);
+  run.tick = setInterval(render, 100);
+}
+
+function render() {
+  const el = elapsedSec();
+  setClock(run.dir === 'down' ? fmt(Math.max(0, run.cfg.max - el)) : fmt(el));
+  const sig = shownSignal(signalFor(el, run.t));
+  if (sig !== run.lastSig) { applySignal(sig); run.lastSig = sig; }
+}
+
+function startPause() {
+  if (run.phase === 'ready') return startTimer();
+  if (run.phase === 'running') { run.pausedAt = performance.now(); setPhase('paused'); }
+  else { run.pausedTotal += performance.now() - run.pausedAt; run.pausedAt = 0; setPhase('running'); }
+  render();
+}
+
+function endRun() {
+  clearInterval(run.tick); run.tick = null;
+  releaseWakeLock();
+  applySignal('idle'); run.lastSig = '';
+}
+
+// Reset needs a second tap within 3 s, so a stray touch cannot wipe a speech in progress.
+let resetArmed = null;
+function disarmReset() {
+  clearTimeout(resetArmed); resetArmed = null;
+  $('reset-btn').classList.remove('armed');
+  $('reset-btn').querySelector('.ctl-text').textContent = 'Reset';
+}
+function resetTimer() {
+  if (run.phase === 'ready') return;
+  if (!resetArmed) {
+    $('reset-btn').classList.add('armed');
+    $('reset-btn').querySelector('.ctl-text').textContent = 'Tap again';
+    resetArmed = setTimeout(disarmReset, 3000);
+    return;
+  }
+  endRun();
+  run.startAt = 0;
+  setPhase('ready');
+  renderReady();
+}
+
+function stopTimer() {
+  if (run.phase === 'ready') return;
+  const used = elapsedSec();
+  run.stoppedPhase = run.phase;
+  run.stopped = true;
+  endRun();
+  if (run.slotIndex != null && state.agenda[run.slotIndex]) {
+    state.agenda[run.slotIndex].used = used;
+    if (run.slotIndex < state.agenda.length - 1) state.selected = run.slotIndex + 1;  // ready for the next speaker
+    save(); renderAgenda();
+  }
+  setPhase('ready');
+  showSummary(used);
+}
+
+function showSummary(used) {
+  $('sum-label').textContent = run.label || 'Time taken';
+  $('sum-time').textContent = fmt(used);
+  $('sum-min').textContent = fmt(run.cfg.min);
+  $('sum-amb').textContent = fmt(run.cfg.amber);
+  $('sum-max').textContent = fmt(run.cfg.max);
+  const v = $('sum-verdict');
+  v.className = 'verdict';
+  if (used < run.cfg.min) { v.textContent = `Under minimum by ${fmt(run.cfg.min - used)}`; v.classList.add('v-under'); }
+  else if (used <= run.cfg.max) { v.textContent = 'Within time'; v.classList.add('v-ok'); }
+  else { v.textContent = `Over time by ${fmt(used - run.cfg.max)}`; v.classList.add('v-over'); }
+  show('summary-view');
+  $('back-btn').focus();
+}
+
+$('startpause-btn').addEventListener('click', startPause);
+$('stop-btn').addEventListener('click', stopTimer);
+$('reset-btn').addEventListener('click', resetTimer);
+$('prev-slot').addEventListener('click', () => moveSlot(-1));
+$('next-slot').addEventListener('click', () => moveSlot(1));
+
+// Summary: Done, Restart, or Resume (stopped by mistake: carry on as if the clock never
+// stopped, since the speaker kept talking).
+$('back-btn').addEventListener('click', () => {
+  run.stopped = false; run.startAt = 0;
+  show('main-view'); renderReady();
 });
-function renderSimple() {
-  writeMMSS(sIn.minMM, sIn.minSS, state.simple.min);
-  writeMMSS(sIn.maxMM, sIn.maxSS, state.simple.max);
+$('again-btn').addEventListener('click', () => {
+  run.stopped = false;
+  if (run.slotIndex != null) { state.selected = run.slotIndex; save(); renderAgenda(); }
+  show('main-view');
+  startTimer();
+});
+$('resume-btn').addEventListener('click', () => {
+  if (!run.stopped) return;
+  run.stopped = false;
+  if (run.slotIndex != null && state.agenda[run.slotIndex]) {
+    state.agenda[run.slotIndex].used = run.prevUsed;
+    state.selected = run.slotIndex;
+    save(); renderAgenda();
+  }
+  show('main-view');
+  $('timer-label').textContent = run.label;
+  setPhase(run.stoppedPhase);
+  enterFullscreen();
+  requestWakeLock();
+  render();
+  run.tick = setInterval(render, 100);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!main.classList.contains('active') || e.target.closest('input')) return;
+  if (e.code === 'Space') {
+    if (e.target.closest('button')) return;   // the focused button handles Space itself
+    e.preventDefault(); startPause();
+  } else if (e.key === 'Escape') { e.preventDefault(); stopTimer(); }
+  else if (e.key === 'r' || e.key === 'R') resetTimer();
+  else if (e.key === 'ArrowLeft') moveSlot(-1);
+  else if (e.key === 'ArrowRight') moveSlot(1);
+});
+
+/* ================= settings ================= */
+$('settings-btn').addEventListener('click', () => {
+  if (run.phase !== 'ready') return;
+  renderSettings();
+  exitFullscreen();
+  show('settings-view');
+  window.scrollTo(0, 0);
+});
+$('done-btn').addEventListener('click', () => {
+  if (state.mode === 'simple' && !validate(state.simple)) return;
+  show('main-view');
+  renderReady();
+});
+
+function renderSettings() {
+  for (const b of document.querySelectorAll('button[data-mode]')) b.setAttribute('aria-checked', String(b.dataset.mode === state.mode));
+  for (const b of document.querySelectorAll('[data-dir]')) b.setAttribute('aria-checked', String(b.dataset.dir === state.dir));
+  $('settings-view').dataset.mode = state.mode;
+  $('dir-hint').textContent = state.dir === 'down'
+    ? 'Counts down from the red (max) time and holds at 0:00 once the speaker is over. The colours carry on as normal.'
+    : 'Counts up from 0:00.';
+  for (const cb of document.querySelectorAll('[data-sig]')) {
+    cb.checked = !!state.signals[cb.dataset.sig];
+    cb.closest('.sig-row').classList.toggle('off', !cb.checked);
+  }
+  $('bell-after').value = state.bellAfter;
+  writeSimple();
   renderRecents();
+  renderAgenda();
 }
+
+for (const b of document.querySelectorAll('button[data-mode]')) b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); renderSettings(); });
+for (const b of document.querySelectorAll('[data-dir]')) b.addEventListener('click', () => { state.dir = b.dataset.dir; save(); renderSettings(); });
+for (const cb of document.querySelectorAll('[data-sig]')) cb.addEventListener('change', () => {
+  state.signals[cb.dataset.sig] = cb.checked;
+  cb.closest('.sig-row').classList.toggle('off', !cb.checked);
+  save();
+});
+bindNumeric($('bell-after'));
+$('bell-after').addEventListener('change', () => {
+  state.bellAfter = Math.min(600, secs($('bell-after').value, 30));
+  $('bell-after').value = state.bellAfter;
+  save();
+});
+
+/* ---------- simple mode times ---------- */
+const sIn = {
+  minMM: $('s-min-mm'), minSS: $('s-min-ss'), ambMM: $('s-amb-mm'), ambSS: $('s-amb-ss'), maxMM: $('s-max-mm'), maxSS: $('s-max-ss'),
+};
+for (const [k, el] of Object.entries(sIn)) {
+  bindNumeric(el, k.endsWith('SS'));
+  el.addEventListener('change', () => {
+    const next = { min: readMMSS(sIn.minMM, sIn.minSS), amber: readMMSS(sIn.ambMM, sIn.ambSS), max: readMMSS(sIn.maxMM, sIn.maxSS) };
+    state.simple = followMidpoint(state.simple, next);
+    save(); writeSimple(); renderRecents();
+  });
+}
+function writeSimple() {
+  writeMMSS(sIn.minMM, sIn.minSS, state.simple.min);
+  writeMMSS(sIn.ambMM, sIn.ambSS, state.simple.amber);
+  writeMMSS(sIn.maxMM, sIn.maxSS, state.simple.max);
+}
+
+const sameTimer = (a, b) => a.min === b.min && a.amber === b.amber && a.max === b.max && a.dir === b.dir;
 function renderRecents() {
   const wrap = $('recents');
   wrap.textContent = '';
@@ -138,55 +439,43 @@ function renderRecents() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'recent';
-    if (r.min === state.simple.min && r.max === state.simple.max && r.dir === state.dir) b.classList.add('current');
-    b.innerHTML = `<span class="r-times"><span class="c-green">${fmt(r.min)}</span><span class="arrow">→</span><span class="c-red">${fmt(r.max)}</span></span>
+    if (sameTimer(r, { ...state.simple, dir: state.dir })) b.classList.add('current');
+    b.innerHTML = `<span class="r-times"><span><b class="dot d-green"></b>${fmt(r.min)}</span><span><b class="dot d-amber"></b>${fmt(r.amber)}</span><span><b class="dot d-red"></b>${fmt(r.max)}</span></span>
       <span class="r-dir">${r.dir === 'down' ? 'Count down' : 'Count up'}</span>`;
-    b.title = 'Load this timer';
     b.addEventListener('click', () => {
-      state.simple = { min: r.min, max: r.max };
+      state.simple = { min: r.min, amber: r.amber, max: r.max };
       state.dir = r.dir;
-      save(); renderToggles(); renderSimple();
-      toast(`Loaded ${fmt(r.min)} → ${fmt(r.max)}, ${r.dir === 'down' ? 'count down' : 'count up'}`);
+      save(); renderSettings();
+      toast(`Loaded ${fmt(r.min)} / ${fmt(r.amber)} / ${fmt(r.max)}, ${r.dir === 'down' ? 'count down' : 'count up'}`);
     });
     wrap.appendChild(b);
   }
   $('recents-empty').hidden = state.recents.length > 0;
 }
-function pushRecent(min, max, dir) {
-  state.recents = [{ min, max, dir }, ...state.recents.filter(r => !(r.min === min && r.max === max && r.dir === dir))].slice(0, 4);
-  renderRecents();
+function pushRecent(c) {
+  const r = { min: c.min, amber: c.amber, max: c.max, dir: state.dir };
+  state.recents = [r, ...state.recents.filter(x => !sameTimer(x, r))].slice(0, 4);
 }
 
-$('simple-start').addEventListener('click', () => {
-  const min = readMMSS(sIn.minMM, sIn.minSS), max = readMMSS(sIn.maxMM, sIn.maxSS);
-  if (!validate(min, max)) return;
-  state.simple = { min, max };
-  pushRecent(min, max, state.dir);
-  save();
-  startTimer({ min, max, label: '', slotIndex: null });
-});
-
-function validate(min, max) {
-  if (max <= 0) { toast('Set a max time above 0:00'); return false; }
-  if (min > max) { toast('Min time must not be later than max time'); return false; }
-  return true;
-}
-
-/* ---------- conference mode ---------- */
+/* ---------- conference agenda ---------- */
 const agendaEl = $('agenda');
 const tpl = $('slot-tpl');
 
 function renderAgenda() {
   agendaEl.textContent = '';
-  if (state.selected >= state.agenda.length) state.selected = state.agenda.length - 1;
+  if (state.selected >= state.agenda.length) state.selected = Math.max(0, state.agenda.length - 1);
   state.agenda.forEach((slot, i) => {
     const li = tpl.content.firstElementChild.cloneNode(true);
     const q = (c) => li.querySelector(c);
+    const write = () => {
+      writeMMSS(q('.min-mm'), q('.min-ss'), slot.min);
+      writeMMSS(q('.amb-mm'), q('.amb-ss'), slot.amber);
+      writeMMSS(q('.max-mm'), q('.max-ss'), slot.max);
+    };
     q('.role').value = slot.role;
     q('.name').value = slot.name;
-    writeMMSS(q('.min-mm'), q('.min-ss'), slot.min);
-    writeMMSS(q('.max-mm'), q('.max-ss'), slot.max);
-    bindNumeric(q('.min-mm')); bindNumeric(q('.max-mm')); bindNumeric(q('.min-ss'), true); bindNumeric(q('.max-ss'), true);
+    write();
+    for (const el of li.querySelectorAll('.mmss input')) bindNumeric(el, el.classList.contains('ss'));
     paintUsed(q('.used'), slot);
     li.classList.toggle('selected', i === state.selected);
 
@@ -197,8 +486,11 @@ function renderAgenda() {
     li.addEventListener('change', () => {
       slot.role = q('.role').value;
       slot.name = q('.name').value;
-      slot.min = readMMSS(q('.min-mm'), q('.min-ss'));
-      slot.max = readMMSS(q('.max-mm'), q('.max-ss'));
+      const next = followMidpoint(slot, {
+        min: readMMSS(q('.min-mm'), q('.min-ss')), amber: readMMSS(q('.amb-mm'), q('.amb-ss')), max: readMMSS(q('.max-mm'), q('.max-ss')),
+      });
+      Object.assign(slot, next);
+      write();
       paintUsed(q('.used'), slot);
       save();
     });
@@ -211,7 +503,6 @@ function renderAgenda() {
     });
     agendaEl.appendChild(li);
   });
-  $('conf-start').disabled = state.agenda.length === 0;
 }
 function markSelected() {
   [...agendaEl.children].forEach((li, i) => li.classList.toggle('selected', i === state.selected));
@@ -220,7 +511,7 @@ function paintUsed(el, slot) {
   el.classList.remove('u-green', 'u-amber', 'u-red');
   const text = el.querySelector('.used-text'), bar = el.querySelector('i');
   if (slot.used == null) { text.textContent = '–'; bar.style.width = '0'; return; }
-  const t = thresholds(slot.min, slot.max);
+  const t = thresholds(slot);
   const sig = signalFor(slot.used, t);
   text.textContent = fmt(slot.used);
   bar.style.width = Math.min(100, (slot.used / t.bell) * 100) + '%';
@@ -231,18 +522,14 @@ function paintUsed(el, slot) {
 
 $('add-slot').addEventListener('click', () => {
   const src = state.agenda[state.selected];
-  const slot = src ? { role: src.role, name: '', min: src.min, max: src.max, used: null } : { role: 'Speaker', name: '', min: 300, max: 420, used: null };
+  const slot = src
+    ? { role: src.role, name: '', min: src.min, amber: src.amber, max: src.max, used: null }
+    : { role: 'Speaker', name: '', min: 300, amber: 360, max: 420, used: null };
   const at = state.agenda.length ? state.selected + 1 : 0;
   state.agenda.splice(at, 0, slot);
   state.selected = at;
   save(); renderAgenda();
   agendaEl.children[at]?.querySelector('.role').focus();
-});
-$('conf-start').addEventListener('click', () => {
-  const slot = state.agenda[state.selected];
-  if (!slot || !validate(slot.min, slot.max)) return;
-  const label = [slot.role, slot.name].filter(Boolean).join(' · ');
-  startTimer({ min: slot.min, max: slot.max, label, slotIndex: state.selected });
 });
 $('reset-agenda').addEventListener('click', () => {
   confirmBox('Replace the agenda with the default list? Names and recorded times will be cleared.', 'Reset', () => {
@@ -251,15 +538,14 @@ $('reset-agenda').addEventListener('click', () => {
 });
 $('export-btn').addEventListener('click', async () => {
   const name = `agenda-${new Date().toISOString().slice(0, 10)}.json`;
-  const json = JSON.stringify({ app: 'speaker-timer', version: 1, agenda: state.agenda }, null, 2);
+  const json = JSON.stringify({ app: 'speaker-timer', version: 2, agenda: state.agenda }, null, 2);
   // iPad: the Share sheet offers Save to Files / AirDrop, which is more reliable than a download.
   try {
     const file = new File([json], name, { type: 'application/json' });
     if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: 'Speaker Timer agenda' }); return; }
   } catch (err) { if (err?.name === 'AbortError') return; }
-  const blob = new Blob([json], { type: 'application/json' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
   a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -272,173 +558,14 @@ $('import-input').addEventListener('change', async (e) => {
     const data = JSON.parse(await file.text());
     const list = Array.isArray(data) ? data : data.agenda;
     if (!Array.isArray(list)) throw new Error('no agenda list');
-    state.agenda = list.map(s => ({
-      role: String(s.role ?? ''), name: String(s.name ?? ''),
-      min: Math.max(0, parseInt(s.min, 10) || 0), max: Math.max(0, parseInt(s.max, 10) || 0),
+    state.agenda = list.map(s => withAmber({
+      role: String(s.role ?? ''), name: String(s.name ?? ''), min: s.min, amber: s.amber, max: s.max,
       used: Number.isFinite(s.used) ? s.used : null,
     }));
     state.selected = 0; save(); renderAgenda(); toast(`Loaded ${state.agenda.length} slots`);
   } catch {
     toast('That file is not a Speaker Timer agenda (.json)');
   }
-});
-
-/* ---------- colour signal checkboxes ---------- */
-for (const cb of document.querySelectorAll('[data-sig]')) {
-  cb.checked = !!state.signals[cb.dataset.sig];
-  cb.addEventListener('change', () => { state.signals[cb.dataset.sig] = cb.checked; save(); });
-}
-
-/* ---------- toggles ---------- */
-for (const b of document.querySelectorAll('[data-mode]')) b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); renderToggles(); });
-for (const b of document.querySelectorAll('[data-dir]')) b.addEventListener('click', () => { state.dir = b.dataset.dir; save(); renderToggles(); renderRecents(); });
-
-/* ================= timer engine ================= */
-// Elapsed time comes from the clock, not from counting ticks, so it stays accurate
-// even when the browser throttles timers.
-const run = { t: null, min: 0, max: 0, dir: 'down', label: '', slotIndex: null, startAt: 0, pausedAt: 0, pausedTotal: 0, tick: null, lastShown: '', lastSig: '' };
-
-function elapsedSec() {
-  const now = run.pausedAt || performance.now();
-  return Math.floor((now - run.startAt - run.pausedTotal) / 1000);
-}
-
-function startTimer({ min, max, label, slotIndex }) {
-  Object.assign(run, { t: thresholds(min, max), min, max, dir: state.dir, label, slotIndex, startAt: performance.now(), pausedAt: 0, pausedTotal: 0, lastShown: '', lastSig: '', stopped: false,
-    prevUsedAtStart: slotIndex != null ? state.agenda[slotIndex]?.used ?? null : null });
-  $('timer-label').textContent = label;
-  $('paused-badge').hidden = true;
-  setPauseIcon(false);
-  show('timer-view');
-  document.documentElement.classList.add('timer-on');
-  enterFullscreen();
-  requestWakeLock();
-  render();
-  clearInterval(run.tick);
-  run.tick = setInterval(render, 100);
-}
-
-function render() {
-  const el = elapsedSec();
-  const shown = run.dir === 'down' ? fmt(Math.max(0, run.max - el)) : fmt(el);
-  if (shown !== run.lastShown) {
-    const lenChanged = shown.length !== run.lastShown.length;
-    $('clock-text').textContent = shown;
-    run.lastShown = shown;
-    if (lenChanged) fitClock();
-  }
-  const sig = shownSignal(signalFor(el, run.t));
-  if (sig !== run.lastSig) {
-    for (const el of [$('timer-view'), document.documentElement]) {
-      el.classList.remove('s-green', 's-amber', 's-red', 's-bell');
-      if (sig !== 'idle') el.classList.add('s-' + sig);
-    }
-    run.lastSig = sig;
-  }
-}
-
-// Size the digits to fill the screen. Widest digit string for this length decides,
-// so the size does not jump around as digits change.
-function fitClock() {
-  const txt = $('clock-text');
-  const sample = run.lastShown.replace(/\d/g, '0');
-  const probe = document.createElement('span');
-  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:100px;line-height:.78;';
-  probe.style.fontFamily = getComputedStyle(txt).fontFamily;
-  probe.style.fontWeight = '700';
-  probe.style.fontVariantNumeric = 'tabular-nums lining-nums';
-  probe.textContent = sample;
-  document.body.appendChild(probe);
-  const w = probe.getBoundingClientRect().width / 100;  // em width
-  probe.remove();
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const byWidth = (vw * 0.94) / w;
-  const byHeight = (vh - 120) / 0.78;   // leave room for the label and buttons
-  txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
-}
-const refit = () => { if ($('timer-view').classList.contains('active')) requestAnimationFrame(fitClock); };
-window.addEventListener('resize', refit);
-window.addEventListener('orientationchange', () => setTimeout(refit, 250));
-window.visualViewport?.addEventListener('resize', refit);
-document.fonts?.ready.then(() => { if ($('timer-view').classList.contains('active')) fitClock(); });
-
-function setPauseIcon(paused) {
-  $('pause-btn').setAttribute('aria-label', paused ? 'Resume' : 'Pause');
-  $('pause-btn').innerHTML = paused
-    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>'
-    : '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-}
-function togglePause() {
-  if (run.pausedAt) { run.pausedTotal += performance.now() - run.pausedAt; run.pausedAt = 0; }
-  else run.pausedAt = performance.now();
-  $('paused-badge').hidden = !run.pausedAt;
-  setPauseIcon(!!run.pausedAt);
-  render();
-}
-
-function stopTimer() {
-  const used = elapsedSec();
-  run.prevSelected = state.selected;
-  run.stopped = true;
-  clearInterval(run.tick);
-  releaseWakeLock();
-  exitFullscreen();
-  $('timer-view').classList.remove('s-green', 's-amber', 's-red', 's-bell');
-  document.documentElement.classList.remove('timer-on', 's-green', 's-amber', 's-red', 's-bell');
-
-  if (run.slotIndex != null && state.agenda[run.slotIndex]) {
-    run.prevUsed = run.prevUsedAtStart;
-    state.agenda[run.slotIndex].used = used;
-    if (run.slotIndex < state.agenda.length - 1) state.selected = run.slotIndex + 1;  // ready for the next speaker
-    save(); renderAgenda();
-  }
-  showSummary(used);
-}
-
-function showSummary(used) {
-  $('sum-label').textContent = run.label || 'Time taken';
-  $('sum-time').textContent = fmt(used);
-  $('sum-min').textContent = fmt(run.min);
-  $('sum-max').textContent = fmt(run.max);
-  $('sum-dir').textContent = run.dir === 'down' ? 'Count down' : 'Count up';
-  const v = $('sum-verdict');
-  v.className = 'verdict';
-  if (used < run.min) { v.textContent = `Under minimum by ${fmt(run.min - used)}`; v.classList.add('v-under'); }
-  else if (used <= run.max) { v.textContent = 'Within time'; v.classList.add('v-ok'); }
-  else { v.textContent = `Over time by ${fmt(used - run.max)}`; v.classList.add('v-over'); }
-  show('summary-view');
-  $('back-btn').focus();
-}
-
-$('pause-btn').addEventListener('click', togglePause);
-$('stop-btn').addEventListener('click', stopTimer);
-$('back-btn').addEventListener('click', () => { run.stopped = false; show('setup-view'); });
-// Stopped by mistake? Carry on as if the clock never stopped: the time spent on the
-// summary screen still counts, because the speaker kept talking.
-$('resume-btn').addEventListener('click', () => {
-  if (!run.stopped) return;
-  run.stopped = false;
-  if (run.slotIndex != null && state.agenda[run.slotIndex]) {
-    state.agenda[run.slotIndex].used = run.prevUsed ?? null;
-    state.selected = run.slotIndex;
-    save(); renderAgenda();
-  }
-  run.lastShown = ''; run.lastSig = '';
-  show('timer-view');
-  document.documentElement.classList.add('timer-on');
-  enterFullscreen();
-  requestWakeLock();
-  render();
-  run.tick = setInterval(render, 100);
-});
-$('again-btn').addEventListener('click', () => {
-  if (run.slotIndex != null) state.selected = run.slotIndex;
-  startTimer({ min: run.min, max: run.max, label: run.label, slotIndex: run.slotIndex });
-});
-document.addEventListener('keydown', (e) => {
-  if (!$('timer-view').classList.contains('active')) return;
-  if (e.code === 'Space' || e.key === 'p') { e.preventDefault(); togglePause(); }
-  else if (e.key === 'Escape' || e.key === 's') { e.preventDefault(); stopTimer(); }
 });
 
 /* ================= screen wake lock & fullscreen ================= */
@@ -450,10 +577,7 @@ const KEEP_AWAKE_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYX
 async function requestWakeLock() {
   wantWake = true;
   try {
-    if ('wakeLock' in navigator) {
-      wakeLock = await navigator.wakeLock.request('screen');
-      return;
-    }
+    if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); return; }
   } catch { /* refused: fall through to the video */ }
   try {
     if (!keepAwakeVideo) {
@@ -488,26 +612,25 @@ function exitFullscreen() {
 /* ================= iPad / iOS ================= */
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isInstalled = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
-// Ask the browser not to evict the saved agenda (iOS clears storage of unvisited sites).
+// Ask the browser not to evict saved settings (iOS clears storage of unvisited sites).
 try { navigator.storage?.persist?.(); } catch { }
 function setupInstallTip() {
-  const tip = $('install-tip');
   let dismissed = false;
   try { dismissed = localStorage.getItem('speaker-timer-tip') === '1'; } catch { }
   if (!isIOS || isInstalled || dismissed) return;
-  tip.hidden = false;
+  $('install-tip').hidden = false;
   $('install-tip-close').addEventListener('click', () => {
-    tip.hidden = true;
+    $('install-tip').hidden = true;
     try { localStorage.setItem('speaker-timer-tip', '1'); } catch { }
   });
 }
 
-/* ================= boot ================= */
+/* ================= boot: open straight on the clock ================= */
 setupInstallTip();
-renderToggles();
-renderSimple();
-renderAgenda();
-show('setup-view');
+renderSettings();
+setPhase('ready');
+show('main-view');
+renderReady();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
