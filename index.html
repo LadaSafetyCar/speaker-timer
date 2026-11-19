@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>Speaker Timer</title>
+  <meta name="description" content="Speaker-facing meeting timer with green, amber and red signals. Works offline.">
+  <meta name="theme-color" content="#14181c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Timer">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <!-- iPad launch screens: dark instead of a white flash when opened from the Home Screen -->
+  <link rel="apple-touch-startup-image" href="splash/ipad-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1488x2266.png" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2266x1488.png" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1620x2160.png" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2160x1620.png" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1640x2360.png" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2360x1640.png" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1668x2224.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2224x1668.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2388x1668.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-1668x2420.png" media="(device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2420x1668.png" media="(device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2732x2048.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2064x2752.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/ipad-2752x2064.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+  <link rel="preload" href="fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<!--APP-START-->
+<div id="app">
+
+  <!-- ============ SETUP ============ -->
+  <section id="setup-view" class="view">
+    <header class="setup-head">
+      <h1 class="brand"><span class="brand-lights" aria-hidden="true"><i></i><i></i><i></i></span>Speaker Timer</h1>
+
+      <div class="toggles">
+        <div class="seg" role="radiogroup" aria-label="Mode">
+          <button type="button" id="mode-simple" role="radio" data-mode="simple">Simple</button>
+          <button type="button" id="mode-conference" role="radio" data-mode="conference">Conference</button>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Clock direction">
+          <button type="button" id="dir-down" role="radio" data-dir="down">Count down</button>
+          <button type="button" id="dir-up" role="radio" data-dir="up">Count up</button>
+        </div>
+      </div>
+    </header>
+
+    <p id="dir-hint" class="hint"></p>
+
+    <div id="install-tip" class="install-tip" hidden>
+      <p><b>Install on this iPad:</b> tap <span class="share-glyph" aria-label="Share">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11v9h12v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        Share, then <b>Add to Home Screen</b>. It then opens full screen, works with no Wi-Fi and keeps your agenda.</p>
+      <button type="button" id="install-tip-close" class="del" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Simple mode -->
+    <div id="simple-panel" class="panel">
+      <div class="simple-card">
+        <div class="time-field">
+          <label for="s-min-mm" class="tlabel tl-green">Green at (min)</label>
+          <div class="mmss">
+            <input id="s-min-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Minimum minutes">
+            <span>:</span>
+            <input id="s-min-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Minimum seconds">
+          </div>
+        </div>
+        <div class="time-field">
+          <label for="s-max-mm" class="tlabel tl-red">Red at (max)</label>
+          <div class="mmss">
+            <input id="s-max-mm" class="mm" inputmode="numeric" maxlength="2" aria-label="Maximum minutes">
+            <span>:</span>
+            <input id="s-max-ss" class="ss" inputmode="numeric" maxlength="2" aria-label="Maximum seconds">
+          </div>
+        </div>
+        <button type="button" id="simple-start" class="primary big-start">Start</button>
+      </div>
+
+      <div class="recents-wrap">
+        <h2 class="eyebrow">Recent timers</h2>
+        <div id="recents" class="recents"></div>
+        <p id="recents-empty" class="muted small">Timers you start show up here. The last four unique ones are kept.</p>
+      </div>
+    </div>
+
+    <!-- Conference mode -->
+    <div id="conference-panel" class="panel">
+      <div class="agenda-head">
+        <span>Role</span><span>Name</span><span class="c-green">Min</span><span class="c-red">Max</span><span>Used</span><span></span>
+      </div>
+      <ol id="agenda" class="agenda"></ol>
+
+      <div class="agenda-actions">
+        <button type="button" id="add-slot" class="ghost">+ Add slot</button>
+        <button type="button" id="conf-start" class="primary">Start selected</button>
+        <span class="spacer"></span>
+        <button type="button" id="export-btn" class="ghost small-btn">Save file</button>
+        <label class="ghost small-btn file-btn">Load file<input type="file" id="import-input" accept=".json,application/json" hidden></label>
+        <button type="button" id="reset-agenda" class="ghost small-btn danger">Reset agenda</button>
+      </div>
+    </div>
+
+    <footer class="legend" aria-label="Colour signals">
+      <span><b class="dot d-green"></b>Green: minimum reached</span>
+      <span><b class="dot d-amber"></b>Amber: halfway to max</span>
+      <span><b class="dot d-red"></b>Red: maximum reached</span>
+      <span><b class="dot d-bell"></b>Flashing: 30 s over</span>
+    </footer>
+  </section>
+
+  <!-- ============ TIMER (speaker-facing) ============ -->
+  <section id="timer-view" class="view" aria-live="off">
+    <div id="timer-label" class="timer-label"></div>
+    <div id="clock" class="clock"><span id="clock-text">0:00</span></div>
+    <div class="timer-controls">
+      <button type="button" id="pause-btn" class="tbtn" aria-label="Pause">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </button>
+      <button type="button" id="stop-btn" class="tbtn" aria-label="Stop">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+      </button>
+    </div>
+    <div id="paused-badge" class="paused-badge" hidden>Paused</div>
+  </section>
+
+  <!-- ============ SUMMARY ============ -->
+  <section id="summary-view" class="view">
+    <div class="summary-card">
+      <p class="eyebrow" id="sum-label">Time taken</p>
+      <div id="sum-time" class="sum-time">0:00</div>
+      <p id="sum-verdict" class="verdict"></p>
+      <dl class="sum-grid">
+        <div><dt>Min</dt><dd id="sum-min"></dd></div>
+        <div><dt>Max</dt><dd id="sum-max"></dd></div>
+        <div><dt>Clock</dt><dd id="sum-dir"></dd></div>
+      </dl>
+      <div class="sum-actions">
+        <button type="button" id="resume-btn" class="ghost">Resume timer</button>
+        <button type="button" id="again-btn" class="ghost">Restart</button>
+        <button type="button" id="back-btn" class="primary">Back to setup</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- In-page confirm -->
+  <div id="confirm" class="confirm" hidden>
+    <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="confirm-msg">
+      <p id="confirm-msg"></p>
+      <div class="confirm-actions">
+        <button type="button" id="confirm-no" class="ghost">Cancel</button>
+        <button type="button" id="confirm-yes" class="primary danger-fill">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+</div>
+
+<template id="slot-tpl">
+  <li class="slot">
+    <input class="role" placeholder="Role" aria-label="Role">
+    <input class="name" placeholder="Name" aria-label="Speaker name">
+    <div class="mmss compact"><input class="min-mm mm" inputmode="numeric" maxlength="2" aria-label="Min minutes"><span>:</span><input class="min-ss ss" inputmode="numeric" maxlength="2" aria-label="Min seconds"></div>
+    <div class="mmss compact"><input class="max-mm mm" inputmode="numeric" maxlength="2" aria-label="Max minutes"><span>:</span><input class="max-ss ss" inputmode="numeric" maxlength="2" aria-label="Max seconds"></div>
+    <div class="used"><span class="used-text">–</span><span class="used-bar"><i></i></span></div>
+    <button type="button" class="del" aria-label="Delete slot">×</button>
+  </li>
+</template>
+<!--APP-END-->
+
+<script src="app.js"></script>
+</body>
+</html>
