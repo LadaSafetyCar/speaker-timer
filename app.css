@@ -11,12 +11,13 @@
 
 :root {
   /* surfaces (light) */
-  --bg: #eef1f0;
+  --bg: #f2f2f2;           /* light mode: neutral greys, so only the Sea Country blue carries colour */
   --surface: #ffffff;
-  --surface-2: #e3e8e6;
-  --line: #cfd7d4;
+  --surface-2: #e7e7e7;
+  --line: #d6d6d6;
   --fg: #16201d;
-  --muted: #5b6965;
+  --muted: #5e5e5e;
+  --seg-shadow: none;      /* no drop shadow on the selected switch (brand guidelines) */
   --ink: #0d6e9c;          /* primary button: Sea Country – Dark, AA with white */
   --ink-fg: #ffffff;
   /* signals: fixed in both themes, they are the product */
@@ -46,14 +47,14 @@
   :root:not([data-theme="light"]) {
     --bg: #0f1312; --surface: #171d1b; --surface-2: #212927; --line: #2d3734;
     --fg: #e8eeec; --muted: #93a19c; --ink: #e8eeec; --ink-fg: #0f1312;
-    --c-green-text: #4fd27f; --c-red-text: #ff6b7b; --c-amber-text: #f4c84a; --focus: #7aa7ff; --brand-sea-dark: #36a9c7;
+    --c-green-text: #4fd27f; --c-red-text: #ff6b7b; --c-amber-text: #f4c84a; --focus: #7aa7ff; --brand-sea-dark: #36a9c7; --seg-shadow: 0 1px 3px rgb(0 0 0 / .15);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1312; --surface: #171d1b; --surface-2: #212927; --line: #2d3734;
   --fg: #e8eeec; --muted: #93a19c; --ink: #e8eeec; --ink-fg: #0f1312;
-  --c-green-text: #4fd27f; --c-red-text: #ff6b7b; --c-amber-text: #f4c84a; --focus: #7aa7ff; --brand-sea-dark: #36a9c7;
+  --c-green-text: #4fd27f; --c-red-text: #ff6b7b; --c-amber-text: #f4c84a; --focus: #7aa7ff; --brand-sea-dark: #36a9c7; --seg-shadow: 0 1px 3px rgb(0 0 0 / .15);
   color-scheme: dark;
 }
 
@@ -268,7 +269,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   border: 0; background: transparent; padding: 9px 18px; border-radius: 999px; cursor: pointer;
   font-weight: 600; color: var(--muted); white-space: nowrap; min-height: 42px;
 }
-.seg button[aria-checked="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgb(0 0 0 / .15); }
+.seg button[aria-checked="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--seg-shadow); }
 .hint { margin: 10px 0 0; color: var(--muted); font-size: .95rem; }
 
 /* colour rows */
