@@ -7,7 +7,7 @@ It is plain HTML, CSS and JavaScript. There is no build step, and it works offli
 ## Features
 
 - **Opens on the clock.** The start-up screen is the speaker-facing clock, ready to go. Everything else lives behind the **gear (Settings)** in the top-right corner, which hides while a timer runs.
-- **Big clock.** The digits are sized to fill the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits. The minutes and the seconds each sit in a fixed-width box, so the clock never shifts sideways as it counts, while the digits inside keep the font's natural spacing.
+- **Big clock.** The digits are sized to fill the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits. The digits keep the font's natural spacing and are always centred on screen. Poppins has no equal-width digits, so when a narrow "1" appears or disappears the clock glides (0.3 s) to its new centre instead of jumping.
 - **Controls** sit bottom-right, with the main action rightmost and away from the clock:
   - Before a run there is only one button, **Start**.
   - During a run, **Simple mode** works like the iPhone timer: **Stop** (back to the start time) and **Pause/Resume**.

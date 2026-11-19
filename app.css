@@ -189,6 +189,8 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
    never shifts while the digits inside keep the font's natural spacing. */
 #clock-text .cg, #clock-text .cc { display: inline-block; white-space: nowrap; }
 #clock-text .cc { width: .3em; text-align: center; }
+#clock-text { transition: transform .3s ease; }   /* glide to the new centre, see centreClock() */
+@media (prefers-reduced-motion: reduce) { #clock-text { transition: none; } }
 #clock-text .to-r { text-align: right; }
 #clock-text .to-l { text-align: left; }
 

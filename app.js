@@ -184,7 +184,20 @@ function setClock(text) {
   el.innerHTML = `<span class="cg to-r" style="width:${mins.length * DIGIT_EM}em">${mins}</span>`
     + '<span class="cc">:</span>'
     + `<span class="cg to-l" style="width:${secsText.length * DIGIT_EM}em">${secsText}</span>`;
-  if (lenChanged) fitClock();
+  if (lenChanged) fitClock(); else centreClock();
+}
+
+// The boxes leave spare space at the outer edges when narrow digits (like "1") show, which
+// would pull the numbers off-centre. Shift the whole clock by half the difference so the
+// visible digits are centred; CSS glides the shift so it never jumps.
+function centreClock() {
+  const el = $('clock-text');
+  const [mins, , secsBox] = el.children;
+  if (!mins || !secsBox) return;
+  const inked = (box) => { const r = document.createRange(); r.selectNodeContents(box); return r.getBoundingClientRect().width; };
+  const spareLeft = mins.getBoundingClientRect().width - inked(mins);
+  const spareRight = secsBox.getBoundingClientRect().width - inked(secsBox);
+  el.style.transform = `translateX(${((spareRight - spareLeft) / 2).toFixed(1)}px)`;
 }
 
 function renderReady() {
@@ -225,6 +238,7 @@ function fitClock() {
   const byWidth = (window.innerWidth * 0.94) / w;
   const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
   txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
+  centreClock();
 }
 const refit = () => requestAnimationFrame(fitClock);
 window.addEventListener('resize', refit);
