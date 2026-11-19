@@ -24,11 +24,12 @@
   --sig-green: #169a46;
   --sig-amber: #f4b400;
   --sig-red: #d3263a;
-  --sig-idle: #101413;
+  --sig-idle: #101413;     /* near-black: the "off" beat of the flashing signal */
+  --clock-bg: #0d6e9c;     /* Sea Country – Dark: the clock screen before green */
+  --on-clock: #ffffff;     /* white on Sea Country – Dark is AA (brand accessibility chart) */
   --on-green: #ffffff;
   --on-amber: #1d1600;
   --on-red: #ffffff;
-  --on-idle: #f3f6f5;
   --c-green-text: #0f7a36;
   --c-red-text: #b51d30;
   --c-amber-text: #8a6500;
@@ -115,7 +116,7 @@ button, input { font: inherit; color: inherit; }
 /* ================= main clock screen (fixed palette) ================= */
 /* On an installed iPad the home-indicator strip lies outside the fixed box and shows
    the root background, so the root takes the signal colour too. */
-html.timer-on { background: var(--sig-idle); }
+html.timer-on { background: var(--clock-bg); }
 html.timer-on body { background: transparent; }
 html.timer-on.s-green { background: var(--sig-green); }
 html.timer-on.s-amber { background: var(--sig-amber); }
@@ -126,7 +127,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 
 #main-view {
   position: fixed; inset: 0; z-index: 5;
-  background: var(--sig-idle); color: var(--on-idle);
+  background: var(--clock-bg); color: var(--on-clock);
   transition: background-color .25s ease, color .25s ease;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   touch-action: none;   /* no pinch-zoom or scroll bounce under the speaker's clock */
@@ -142,14 +143,13 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 @media (prefers-reduced-motion: reduce) { #main-view.s-bell { animation-duration: 2s; } }
 
-/* Brand (Option B): centred logo and a solid Desert Country line while the clock waits.
-   Both hide on Start, leaving only the signal colours. No gradients, per the guidelines. */
+/* Brand: centred keyline logo on the Sea Country – Dark clock screen while it waits.
+   The logo hides on Start; from green onwards only the signal colours show. */
 .brand-logo {
   position: absolute; z-index: 1; left: 50%; transform: translateX(-50%);
   top: calc(env(safe-area-inset-top, 0px) + 14px);
   height: clamp(44px, 7vh, 64px); width: auto; pointer-events: none;
 }
-.horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--brand-sea); }
 .timer-label { max-width: calc(50vw - 150px); }
 
 /* While the clock runs, only the controls remain; setup affordances step aside. */
@@ -171,7 +171,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 .icon-btn {
   flex: none; width: 48px; height: 48px; border-radius: 50%; border: 0; display: grid; place-items: center;
-  background: rgb(255 255 255 / .08); color: inherit; cursor: pointer;
+  background: rgb(255 255 255 / .16); color: inherit; cursor: pointer;
 }
 .icon-btn svg { width: 24px; height: 24px; }
 .icon-btn:disabled { opacity: .3; cursor: default; }
@@ -179,7 +179,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 
 .clock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 #clock-text {
-  font-family: var(--font-clock); font-weight: 600;
+  font-family: var(--font-clock); font-weight: 700;
   line-height: .78;           /* digits have no descenders: trim the box to the figures */
   white-space: nowrap;
   font-size: 40vw;            /* replaced by fitClock() */
@@ -187,7 +187,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 /* Poppins digits differ in width, so each sits in a fixed slot and the clock never shifts. */
 #clock-text .cd, #clock-text .cc { display: inline-block; text-align: center; }
-#clock-text .cd { width: .66em; }
+#clock-text .cd { width: .68em; }
 #clock-text .cc { width: .3em; }
 #clock-text .to-r { text-align: right; }
 #clock-text .to-l { text-align: left; }
@@ -195,10 +195,10 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 .ready-info {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; min-width: 0;
   font: 600 clamp(1rem, 1.8vw, 1.25rem)/1.2 var(--font-clock);
-  font-variant-numeric: tabular-nums; opacity: .85; padding-bottom: 14px;
+  font-variant-numeric: tabular-nums; padding-bottom: 14px;
 }
 .ready-info span { display: inline-flex; align-items: center; gap: 7px; }
-.ready-info .ri-dir { font: 600 .9rem/1 var(--font-ui); opacity: .7; letter-spacing: .04em; text-transform: uppercase; }
+.ready-info .ri-dir { font: 600 .9rem/1 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; }
 
 /* Controls: bottom-right, primary action rightmost. Start is the only control before a run. */
 .timer-controls { display: flex; gap: 12px; flex: none; transition: opacity .2s; }
@@ -218,7 +218,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 .ctl svg { width: 24px; height: 24px; flex: none; }
 #main-view[data-phase="ready"] .ctl-primary {
-  background: var(--on-idle); color: var(--sig-idle); border-color: var(--on-idle);
+  background: var(--on-clock); color: var(--clock-bg); border-color: var(--on-clock);
   height: 72px; padding: 0 34px 0 28px; font-size: 1.3rem;
 }
 .ctl.armed { border-style: dashed; background: rgb(255 255 255 / .16); }
@@ -399,7 +399,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   background: var(--ink); color: var(--ink-fg); padding: 10px 18px; border-radius: 999px; font-weight: 600;
   max-width: calc(100% - 32px); text-align: center;
 }
-html.timer-on .toast { top: calc(env(safe-area-inset-top, 0px) + 72px); bottom: auto; background: var(--on-idle); color: var(--sig-idle); }
+html.timer-on .toast { top: calc(env(safe-area-inset-top, 0px) + 72px); bottom: auto; background: var(--on-clock); color: var(--clock-bg); }
 
 /* ================= iPad and other touch screens ================= */
 @media (pointer: coarse) {

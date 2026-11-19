@@ -51,18 +51,19 @@ What the app does for iPad:
 
 ## Branding
 
-Tourism Australia branding follows the brand guidelines, using the "horizon line" layout chosen for events:
+Tourism Australia branding follows the brand guidelines. The conference theme is **Sea Country**, and only that one colour stream is used:
 
-- **Clock screen while waiting:**
-  - The keyline logo (`brand/ta-logo-keyline.svg`), made for dark backgrounds, sits centred at the top.
-  - A solid **Sea Country Mid (#36A9C7)** line runs along the bottom edge. It is solid because the guidelines don't allow gradients or effects, and blue because it stays clearly apart from the green, amber and red signals.
-  - Both hide on Start, so the speaker sees only the signal colours.
+- **Clock screen:**
+  - Waiting, and running until green, the background is **Sea Country Dark (#0D6E9C)** with white digits (AA in the brand's accessibility chart) in bold Poppins.
+  - The keyline logo (`brand/ta-logo-keyline.svg`) sits centred at the top and hides on Start.
+  - From green onwards, only the signal colours show.
 - **Settings:**
-  - Light mode uses the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Sea Country Dark rule under the title. Dark mode uses the keyline logo.
-  - Buttons use **Sea Country Dark (#0D6E9C)**. White text on it is rated AA in the brand's accessibility chart.
-- **Launch screens:** the keyline logo on the clock's dark background.
+  - Light mode has neutral greys and the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Sea Country Dark rule under the title. Dark mode uses the keyline logo.
+  - Buttons use **Sea Country Dark (#0D6E9C)**.
+- **Launch screens:** the keyline logo on Sea Country Dark.
+- **Graphic shapes (the storytelling wave device) are not used**, by choice.
 - **Typefaces:** the brand's Google fallback fonts, **Poppins** for text and the clock and **Libre Baskerville** for headings. The corporate typefaces are deliberately not used. The Windows fallbacks named in the guidelines (Century Gothic, Georgia) are listed as backups.
-- **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them.
+- **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them. The flashing alternates red with near-black for maximum contrast.
 
 The logo files are Tourism Australia brand assets. Use them only as the brand guidelines allow.
 

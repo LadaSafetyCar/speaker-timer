@@ -216,7 +216,7 @@ function fitClock() {
   const txt = $('clock-text');
   const text = txt.dataset.text || '0:00';
   // width in em from the fixed digit and colon slots (see #clock-text .cd / .cc)
-  const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? 0.3 : 0.66), 0);
+  const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? 0.3 : 0.68), 0);
   const byWidth = (window.innerWidth * 0.94) / w;
   const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
   txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
