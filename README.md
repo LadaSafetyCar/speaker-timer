@@ -1,6 +1,8 @@
 # Speaker Timer
 
-A speaker-facing meeting timer. The whole screen turns green, amber and red, and the digits are sized to fill the display so they can be read from the lectern. Inspired by [fangfufu/toastmaster-timer](https://github.com/fangfufu/toastmaster-timer).
+A speaker-facing meeting timer. The whole screen turns green, amber and red, and the digits are sized to fill the display so they can be read from the lectern. Inspired by [fangfufu/toastmaster-timer](https://github.com/fangfufu/toastmaster-timer). 
+
+It's primarily written with Claude so use at your own risk.
 
 It is plain HTML, CSS and JavaScript. There is no build step, and it works offline once installed.
 
