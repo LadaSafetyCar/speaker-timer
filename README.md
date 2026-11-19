@@ -60,7 +60,9 @@ Tourism Australia branding follows the brand guidelines. The conference theme is
 - **Settings:**
   - Light mode has neutral greys and the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Sea Country Dark rule under the title. Dark mode uses the keyline logo.
   - Buttons use **Sea Country Dark (#0D6E9C)**.
-- **Launch screens:** the keyline logo on Sea Country Dark.
+- **Launch logo:** the keyline logo on Sea Country Dark.
+  - The app shows the logo itself for 1.5 s on every fresh launch (after a swipe-away and reopen), then fades into the clock. A tap skips it.
+  - This is needed because iPadOS's own launch image (`splash/`) is saved when the icon is added and often shows too briefly to see. The two match in size and position, so the hand-over is seamless.
 - **Graphic shapes (the storytelling wave device) are not used**, by choice.
 - **Typefaces:** the brand's Google fallback fonts, **Poppins** for text and the clock and **Libre Baskerville** for headings. The corporate typefaces are deliberately not used. The Windows fallbacks named in the guidelines (Century Gothic, Georgia) are listed as backups.
 - **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them. The flashing alternates red with near-black for maximum contrast.

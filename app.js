@@ -637,6 +637,20 @@ function setupInstallTip() {
   });
 }
 
+/* ================= launch logo ================= */
+// Shown on every fresh launch; fades out after 1.5 s, or straight away on a tap.
+(() => {
+  const el = $('launch');
+  if (!el) return;
+  const hide = () => {
+    if (el.classList.contains('out')) return;
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 600);
+  };
+  setTimeout(hide, 1500);
+  el.addEventListener('pointerdown', hide);
+})();
+
 /* ================= boot: open straight on the clock ================= */
 setupInstallTip();
 renderSettings();
