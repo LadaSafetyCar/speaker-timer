@@ -69,6 +69,30 @@ Tourism Australia branding follows the brand guidelines. The conference theme is
 
 The logo files are Tourism Australia brand assets. Use them only as the brand guidelines allow.
 
+## Testing
+
+`tests/simple-mode.test.js` is an end-to-end test of Simple mode. It needs Node.js and Playwright:
+
+```bash
+npm i -D playwright && npx playwright install chromium
+```
+
+```bash
+node tests/simple-mode.test.js
+```
+
+It serves the folder locally, drives the app in headless Chromium with a fake clock, and exits non-zero on failure. It covers:
+
+- the launch logo and the start-up screen
+- count down and count up, through every colour, the 0:00 hold and the flashing
+- Pause, Resume, Stop, keyboard shortcuts, and that Reset is absent in Simple mode
+- the colour tick boxes and the flashing delay
+- validation, the amber midpoint, and input clean-up
+- recent timers and saved settings
+- clock layout on iPad landscape, iPad portrait and a phone
+- one-hour accuracy, offline start-up and the install files
+- page errors, throughout
+
 ## Run locally
 
 ```bash

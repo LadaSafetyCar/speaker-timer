@@ -63,7 +63,8 @@ function fmt(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 function readMMSS(mmEl, ssEl) {
-  return Math.max(0, (parseInt(mmEl.value, 10) || 0) * 60 + (parseInt(ssEl.value, 10) || 0));
+  const s = Math.min(59, parseInt(ssEl.value, 10) || 0);   // 75 s means 59, not 1:15
+  return Math.max(0, (parseInt(mmEl.value, 10) || 0) * 60 + s);
 }
 function writeMMSS(mmEl, ssEl, sec) {
   mmEl.value = Math.floor(sec / 60);
