@@ -58,7 +58,9 @@
     </header>
 
     <div id="paused-badge" class="paused-badge" hidden>Paused</div>
+    <img class="brand-logo ready-only" src="brand/ta-logo-keyline.svg" alt="Tourism Australia">
     <div class="clock"><span id="clock-text">7:00</span></div>
+    <div class="horizon ready-only" aria-hidden="true"></div>
 
     <footer class="main-bottom">
       <div id="ready-info" class="ready-info ready-only"></div>
@@ -83,8 +85,12 @@
   <section id="settings-view" class="view" data-mode="simple">
     <header class="settings-head">
       <div>
-        <p class="brand-line"><span class="brand-lights" aria-hidden="true"><i></i><i></i><i></i></span>Speaker Timer</p>
-        <h1>Settings</h1>
+        <picture class="brand-mark">
+          <source srcset="brand/ta-logo-keyline.svg" media="(prefers-color-scheme: dark)">
+          <img src="brand/ta-logo-desert.svg" alt="Tourism Australia">
+        </picture>
+        <h1>Settings <span class="app-name">Speaker Timer</span></h1>
+        <span class="accent-rule" aria-hidden="true"></span>
       </div>
       <button type="button" id="done-btn" class="primary">Done</button>
     </header>

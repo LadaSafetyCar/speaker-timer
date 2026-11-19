@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you deploy so old caches are cleared.
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = `speaker-timer-${VERSION}`;
 const SHELL = [
   './',
@@ -14,6 +14,8 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
+  './brand/ta-logo-keyline.svg',
+  './brand/ta-logo-desert.svg',
 ];
 
 self.addEventListener('install', (e) => {

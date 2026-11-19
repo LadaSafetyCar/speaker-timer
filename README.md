@@ -47,6 +47,22 @@ What the app does for iPad:
 
 **Optional:** lock the iPad to this app with **Guided Access** (Settings → Accessibility → Guided Access, then triple-click the top button). Then nobody at the lectern can swipe out of it.
 
+## Branding
+
+Tourism Australia branding follows the brand guidelines, using the "horizon line" layout chosen for events:
+
+- **Clock screen while waiting:**
+  - The keyline logo (`brand/ta-logo-keyline.svg`), made for dark backgrounds, sits centred at the top.
+  - A solid **Desert Country Mid (#F95A00)** line runs along the bottom edge. It is solid because the guidelines don't allow gradients or effects.
+  - Both hide on Start, so the speaker sees only the signal colours.
+- **Settings:**
+  - Light mode uses the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Desert Country Mid rule under the title. Dark mode uses the keyline logo.
+  - Buttons use **Bush Country Dark (#054A29)**. White text on it is rated AAA in the brand's accessibility chart.
+- **Launch screens:** the keyline logo on the clock's dark background.
+- **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them.
+
+The logo files are Tourism Australia brand assets. Use them only as the brand guidelines allow.
+
 ## Run locally
 
 ```bash
@@ -98,6 +114,7 @@ app.js                timer engine, modes, agenda, storage, wake lock
 sw.js                 offline cache
 manifest.webmanifest  PWA metadata
 icons/                app icons
-splash/               iPad launch screens
+splash/               iPad launch screens (with logo)
+brand/                Tourism Australia logo files
 fonts/                Barlow and Barlow Condensed (SIL Open Font License), self-hosted for offline use
 ```

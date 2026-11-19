@@ -13,7 +13,7 @@
   --line: #cfd7d4;
   --fg: #16201d;
   --muted: #5b6965;
-  --ink: #16201d;          /* primary button */
+  --ink: #054a29;          /* primary button: Bush Country – Dark, AAA with white */
   --ink-fg: #ffffff;
   /* signals: fixed in both themes, they are the product */
   --sig-green: #169a46;
@@ -28,6 +28,10 @@
   --c-red-text: #b51d30;
   --c-amber-text: #8a6500;
   --focus: #2f6fdb;
+  /* Tourism Australia brand colours (from the brand guidelines). They frame the app only and
+     are never used for the green/amber/red signals. */
+  --brand-desert: #f95a00;      /* Desert Country – Mid */
+  --brand-bush-dark: #054a29;   /* Bush Country – Dark */
   /* type */
   --font-ui: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-clock: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
@@ -132,6 +136,16 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 @media (prefers-reduced-motion: reduce) { #main-view.s-bell { animation-duration: 2s; } }
 
+/* Brand (Option B): centred logo and a solid Desert Country line while the clock waits.
+   Both hide on Start, leaving only the signal colours. No gradients, per the guidelines. */
+.brand-logo {
+  position: absolute; z-index: 1; left: 50%; transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  height: clamp(44px, 7vh, 64px); width: auto; pointer-events: none;
+}
+.horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--brand-desert); }
+.timer-label { max-width: calc(50vw - 150px); }
+
 /* While the clock runs, only the controls remain; setup affordances step aside. */
 #main-view:not([data-phase="ready"]) .ready-only { visibility: hidden; }
 
@@ -227,14 +241,11 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 #settings-view[data-mode="conference"] .simple-only { display: none; }
 
 .settings-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.settings-head h1 { margin: 2px 0 0; font: 700 2.4rem/1 var(--font-clock); letter-spacing: .01em; }
+.settings-head h1 { margin: 14px 0 0; font: 700 2.4rem/1 var(--font-clock); letter-spacing: .01em; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.settings-head .app-name { font: 600 1rem/1 var(--font-ui); color: var(--muted); letter-spacing: 0; }
+.brand-mark img { display: block; height: 52px; width: auto; }
+.accent-rule { display: block; width: 64px; height: 4px; border-radius: 2px; background: var(--brand-desert); margin-top: 12px; }
 .settings-head .primary { min-width: 104px; font-size: 1.05rem; }
-.brand-line { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--muted); font-size: .95rem; }
-.brand-lights { display: inline-flex; gap: 3px; }
-.brand-lights i { width: 6px; height: 16px; border-radius: 2px; display: block; }
-.brand-lights i:nth-child(1) { background: var(--sig-green); }
-.brand-lights i:nth-child(2) { background: var(--sig-amber); }
-.brand-lights i:nth-child(3) { background: var(--sig-red); }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
 .card > :last-child { margin-bottom: 0; }
