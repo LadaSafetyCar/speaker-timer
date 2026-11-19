@@ -168,17 +168,22 @@ function setPhase(p) {
   disarmReset();
 }
 
+const DIGIT_EM = 0.68;  // widest Poppins Bold digit
+const COLON_EM = 0.3;
 function setClock(text) {
   const el = $('clock-text');
   if (el.dataset.text === text) return;
   const lenChanged = (el.dataset.text || '').length !== text.length;
   el.dataset.text = text;
   el.setAttribute('aria-label', text);
-  // Minutes hug the colon from the left, seconds from the right, so a narrow "1" leaves its
-  // spare space at the outer edge instead of a gap in the middle.
-  const colon = text.indexOf(':');
-  el.innerHTML = [...text].map((ch, i) => ch === ':' ? '<span class="cc">:</span>'
-    : `<span class="cd ${i < colon ? 'to-r' : 'to-l'}">${ch}</span>`).join('');
+  // Poppins digits differ in width, so the minutes and the seconds each sit in a fixed-width
+  // box sized for the widest digits. Inside a box the digits keep the font's own spacing;
+  // minutes hug the colon from the left, seconds from the right, and any spare space falls
+  // at the outer edges. The clock's overall width never changes as it counts.
+  const [mins, secsText] = text.split(':');
+  el.innerHTML = `<span class="cg to-r" style="width:${mins.length * DIGIT_EM}em">${mins}</span>`
+    + '<span class="cc">:</span>'
+    + `<span class="cg to-l" style="width:${secsText.length * DIGIT_EM}em">${secsText}</span>`;
   if (lenChanged) fitClock();
 }
 
@@ -216,7 +221,7 @@ function fitClock() {
   const txt = $('clock-text');
   const text = txt.dataset.text || '0:00';
   // width in em from the fixed digit and colon slots (see #clock-text .cd / .cc)
-  const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? 0.3 : 0.68), 0);
+  const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? COLON_EM : DIGIT_EM), 0);
   const byWidth = (window.innerWidth * 0.94) / w;
   const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
   txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';

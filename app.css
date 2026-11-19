@@ -185,10 +185,10 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   font-size: 40vw;            /* replaced by fitClock() */
   padding-top: .02em;
 }
-/* Poppins digits differ in width, so each sits in a fixed slot and the clock never shifts. */
-#clock-text .cd, #clock-text .cc { display: inline-block; text-align: center; }
-#clock-text .cd { width: .68em; }
-#clock-text .cc { width: .3em; }
+/* Minutes and seconds each sit in a fixed-width box (widths set in app.js), so the clock
+   never shifts while the digits inside keep the font's natural spacing. */
+#clock-text .cg, #clock-text .cc { display: inline-block; white-space: nowrap; }
+#clock-text .cc { width: .3em; text-align: center; }
 #clock-text .to-r { text-align: right; }
 #clock-text .to-l { text-align: left; }
 
