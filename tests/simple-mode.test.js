@@ -275,23 +275,21 @@ async function run() {
       // stop the page clock flowing on its own, so each reading is taken after the centring glide settles
       await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
       await tapOrClick(page, '#startpause-btn');
-      const widths = new Set(); let worstCentre = 0, outside = 0;
+      const widths = new Set(), lefts = new Set(); let worstCentre = 0, outside = 0;
       for (let s = 1; s <= 80; s++) {
         await tick(page, 1);
-        await page.waitForTimeout(380);  // let the centring glide (0.3 s) finish
         const r = await page.evaluate(() => {
-          const el = document.getElementById('clock-text'); const [m, , sx] = el.children;
-          const a = document.createRange(); a.selectNodeContents(m); const b = document.createRange(); b.selectNodeContents(sx);
-          const box = el.getBoundingClientRect();
-          return { w: Math.round(box.width), left: a.getBoundingClientRect().left, right: b.getBoundingClientRect().right, top: box.top, bottom: box.bottom };
+          const box = document.getElementById('clock-text').getBoundingClientRect();
+          return { w: Math.round(box.width), x: Math.round(box.left), left: box.left, right: box.right, top: box.top, bottom: box.bottom };
         });
-        widths.add(r.w);
+        widths.add(r.w); lefts.add(r.x);
         if (r.left < 0 || r.right > vw || r.top < 0 || r.bottom > vh) outside++;
         worstCentre = Math.max(worstCentre, Math.abs((r.left + r.right) / 2 - vw / 2));
       }
-      eq(widths.size, 1, 'clock box keeps one width while counting');
+      eq(widths.size, 1, 'clock keeps one width while counting');
+      eq(lefts.size, 1, 'clock never moves sideways while counting');
       check(outside === 0, 'digits always inside the screen');
-      check(worstCentre <= 8, 'visible digits centred (within 8 px)', `worst ${worstCentre.toFixed(1)} px`);
+      check(worstCentre <= 2, 'clock centred on screen', `worst ${worstCentre.toFixed(1)} px`);
       eq(await page.evaluate(() => document.documentElement.scrollWidth), vw, 'no sideways scrolling');
       const overlap = await page.evaluate(() => {
         const c = document.getElementById('clock-text').getBoundingClientRect();

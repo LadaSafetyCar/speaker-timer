@@ -185,14 +185,10 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   font-size: 40vw;            /* replaced by fitClock() */
   padding-top: .02em;
 }
-/* Minutes and seconds each sit in a fixed-width box (widths set in app.js), so the clock
-   never shifts while the digits inside keep the font's natural spacing. */
-#clock-text .cg, #clock-text .cc { display: inline-block; white-space: nowrap; }
-#clock-text .cc { width: .3em; text-align: center; }
-#clock-text { transition: transform .3s ease; }   /* glide to the new centre, see centreClock() */
-@media (prefers-reduced-motion: reduce) { #clock-text { transition: none; } }
-#clock-text .to-r { text-align: right; }
-#clock-text .to-l { text-align: left; }
+/* Equal-width digit slots (tabular figures): the clock never moves as it counts. */
+#clock-text .cd, #clock-text .cc { display: inline-block; text-align: center; }
+#clock-text .cd { width: .68em; }   /* widest Poppins Bold digit; keep in step with DIGIT_EM in app.js */
+#clock-text .cc { width: .3em; }
 
 .ready-info {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; min-width: 0;
