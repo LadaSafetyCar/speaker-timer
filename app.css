@@ -43,6 +43,9 @@
   --font-display: "Libre Baskerville", Georgia, "Times New Roman", serif;
   --font-clock: "Poppins", "Century Gothic", system-ui, sans-serif;
   --radius: 10px;
+  /* Extra room below the status bar. In a Home Screen app iPadOS 26 (Liquid Glass) draws a
+     frosted edge about 20 pt under the status bar; the value is raised in that mode below. */
+  --top-clear: 0px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -147,7 +150,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
    The logo hides on Start; from green onwards only the signal colours show. */
 .brand-logo {
   position: absolute; z-index: 1; left: 50%; transform: translateX(-50%);
-  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--top-clear) + 14px);
   height: clamp(44px, 7vh, 64px); width: auto; pointer-events: none;
 }
 .timer-label { max-width: calc(50vw - 150px); }
@@ -161,7 +164,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   padding-left: max(18px, env(safe-area-inset-left, 0px));
   padding-right: max(18px, env(safe-area-inset-right, 0px));
 }
-.main-top { top: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+.main-top { top: 0; padding-top: calc(env(safe-area-inset-top, 0px) + var(--top-clear) + 14px); }
 .main-bottom { bottom: 0; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); align-items: flex-end; }
 
 .slot-nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -223,7 +226,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 
 .paused-badge {
   position: absolute; left: 50%; transform: translateX(-50%); z-index: 2;
-  top: calc(env(safe-area-inset-top, 0px) + 18px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--top-clear) + 18px);
   font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 1rem;
   border: 2px solid currentColor; border-radius: 999px; padding: 4px 16px;
   animation: blink 1.4s ease-in-out infinite;
@@ -242,7 +245,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 /* ================= settings ================= */
 #settings-view {
   max-width: 1040px; margin: 0 auto;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 22px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--top-clear) + 22px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -406,7 +409,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   background: var(--ink); color: var(--ink-fg); padding: 10px 18px; border-radius: 999px; font-weight: 600;
   max-width: calc(100% - 32px); text-align: center;
 }
-html.timer-on .toast { top: calc(env(safe-area-inset-top, 0px) + 72px); bottom: auto; background: var(--on-clock); color: var(--clock-bg); }
+html.timer-on .toast { top: calc(env(safe-area-inset-top, 0px) + var(--top-clear) + 72px); bottom: auto; background: var(--on-clock); color: var(--clock-bg); }
 
 /* ================= iPad and other touch screens ================= */
 @media (pointer: coarse) {
@@ -421,6 +424,9 @@ html.timer-on .toast { top: calc(env(safe-area-inset-top, 0px) + 72px); bottom: 
 
 /* Installed on the Home Screen the status bar is drawn over the page (black-translucent),
    so give it a dark band to sit on above the light settings screen. */
+/* Home Screen app only (set from app.js at launch, so a Safari tab going full screen on Start
+   doesn't count): clear the iPadOS frosted edge under the status bar. */
+html.installed { --top-clear: 22px; }
 @media (display-mode: standalone), (display-mode: fullscreen) {
   body::before {
     content: ""; position: fixed; inset: 0 0 auto; z-index: 4;

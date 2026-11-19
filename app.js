@@ -223,7 +223,8 @@ function fitClock() {
   // width in em from the fixed digit and colon slots (see #clock-text .cd / .cc)
   const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? COLON_EM : DIGIT_EM), 0);
   const byWidth = (window.innerWidth * 0.94) / w;
-  const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
+  const topClear = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-clear')) || 0;
+  const byHeight = (window.innerHeight - 170 - topClear) / 0.78;  // room for the top bar (and iPadOS frosted edge) and bottom controls
   txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
 }
 const refit = () => requestAnimationFrame(fitClock);
@@ -629,6 +630,7 @@ function exitFullscreen() {
 /* ================= iPad / iOS ================= */
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isInstalled = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
+document.documentElement.classList.toggle('installed', isInstalled);   // checked at launch, before any full-screen request
 // Ask the browser not to evict saved settings (iOS clears storage of unvisited sites).
 try { navigator.storage?.persist?.(); } catch { }
 function setupInstallTip() {
