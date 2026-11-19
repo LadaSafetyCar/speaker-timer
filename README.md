@@ -14,6 +14,7 @@ It is plain HTML, CSS and JavaScript. There is no build step, and it works offli
 - **Simple mode**: set Green (min) and Red (max), then Start. The last **4 unique** timers (min, max and direction) appear as one-tap presets.
 - **Conference mode**: an editable agenda (role, name, min, max) with time used per slot. After each stop it selects the next slot, ready for the next speaker. The agenda saves itself in the browser, and you can export and import it as a `.json` file.
 - **Signals:** green at min, amber halfway between min and max, red at max, flashing 30 s past max.
+- **Choose the colours:** tick or untick Green, Amber, Red and Flashing at the bottom of the setup screen. When a colour is off, the screen keeps the colour before it. For example, with Amber off it stays green until red. The choice is saved on the device and applies to both modes.
 - **Timer controls:** pause/resume and stop buttons in the corner. On a keyboard, Space pauses and Esc stops.
 - **During a timer:** the screen stays awake (Wake Lock) and the app goes full screen.
 

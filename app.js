@@ -39,6 +39,8 @@ const state = {
   recents: Array.isArray(saved.recents) ? saved.recents.slice(0, 4) : [],
   agenda: Array.isArray(saved.agenda) && saved.agenda.length ? saved.agenda : structuredClone(DEFAULT_AGENDA),
   selected: Number.isInteger(saved.selected) ? saved.selected : 0,
+  // which colour signals the speaker sees; a switched-off stage keeps the previous colour
+  signals: { green: true, amber: true, red: true, bell: true, ...(saved.signals || {}) },
 };
 
 /* ================= helpers ================= */
@@ -61,6 +63,12 @@ function writeMMSS(mmEl, ssEl, sec) {
 }
 function thresholds(min, max) {
   return { green: min, amber: (min + max) / 2, red: max, bell: max + BELL_AFTER };
+}
+const STAGES = ['idle', 'green', 'amber', 'red', 'bell'];
+// Step back from the reached stage to the nearest one that is switched on.
+function shownSignal(sig) {
+  for (let i = STAGES.indexOf(sig); i > 0; i--) if (state.signals[STAGES[i]]) return STAGES[i];
+  return 'idle';
 }
 function signalFor(elapsed, t) {
   if (elapsed >= t.bell) return 'bell';
@@ -275,6 +283,12 @@ $('import-input').addEventListener('change', async (e) => {
   }
 });
 
+/* ---------- colour signal checkboxes ---------- */
+for (const cb of document.querySelectorAll('[data-sig]')) {
+  cb.checked = !!state.signals[cb.dataset.sig];
+  cb.addEventListener('change', () => { state.signals[cb.dataset.sig] = cb.checked; save(); });
+}
+
 /* ---------- toggles ---------- */
 for (const b of document.querySelectorAll('[data-mode]')) b.addEventListener('click', () => { state.mode = b.dataset.mode; save(); renderToggles(); });
 for (const b of document.querySelectorAll('[data-dir]')) b.addEventListener('click', () => { state.dir = b.dataset.dir; save(); renderToggles(); renderRecents(); });
@@ -313,7 +327,7 @@ function render() {
     run.lastShown = shown;
     if (lenChanged) fitClock();
   }
-  const sig = signalFor(el, run.t);
+  const sig = shownSignal(signalFor(el, run.t));
   if (sig !== run.lastSig) {
     for (const el of [$('timer-view'), document.documentElement]) {
       el.classList.remove('s-green', 's-amber', 's-red', 's-bell');

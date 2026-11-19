@@ -112,11 +112,15 @@
       </div>
     </div>
 
-    <footer class="legend" aria-label="Colour signals">
-      <span><b class="dot d-green"></b>Green: minimum reached</span>
-      <span><b class="dot d-amber"></b>Amber: halfway to max</span>
-      <span><b class="dot d-red"></b>Red: maximum reached</span>
-      <span><b class="dot d-bell"></b>Flashing: 30 s over</span>
+    <footer class="legend">
+      <h2 class="eyebrow">Colour signals shown to the speaker</h2>
+      <div class="sig-toggles" role="group" aria-label="Colour signals">
+        <label class="sig-toggle"><input type="checkbox" id="sig-green" data-sig="green"><b class="dot d-green"></b><span><b>Green</b> at min</span></label>
+        <label class="sig-toggle"><input type="checkbox" id="sig-amber" data-sig="amber"><b class="dot d-amber"></b><span><b>Amber</b> halfway to max</span></label>
+        <label class="sig-toggle"><input type="checkbox" id="sig-red" data-sig="red"><b class="dot d-red"></b><span><b>Red</b> at max</span></label>
+        <label class="sig-toggle"><input type="checkbox" id="sig-bell" data-sig="bell"><b class="dot d-bell"></b><span><b>Flashing</b> 30 s over</span></label>
+      </div>
+      <p class="muted small sig-note">When a colour is off, the screen keeps the colour before it.</p>
     </footer>
   </section>
 

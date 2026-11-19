@@ -183,8 +183,18 @@ button, input { font: inherit; color: inherit; }
 .agenda-actions .spacer { flex: 1; }
 .file-btn { cursor: pointer; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
-.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
+.sig-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.sig-toggle {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px 8px 10px; min-height: 44px;
+  background: var(--surface); font-size: .92rem; user-select: none; -webkit-user-select: none;
+}
+.sig-toggle input { width: 20px; height: 20px; margin: 0; accent-color: var(--ink); }
+.sig-toggle:has(input:not(:checked)) { background: transparent; color: var(--muted); }
+.sig-toggle:has(input:not(:checked)) .dot { opacity: .3; }
+.sig-toggle:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sig-note { margin: 8px 0 0; }
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .d-green { background: var(--sig-green); } .d-amber { background: var(--sig-amber); } .d-red { background: var(--sig-red); }
 .d-bell { background: repeating-linear-gradient(90deg, var(--sig-red) 0 3px, var(--sig-idle) 3px 6px); }
