@@ -300,7 +300,7 @@ async function run() {
     }, device));
   }
 
-  for (const [label, query] of [['10-minute countdown (current)', ''], ['10-minute countdown with ?start959 preview', '?start959']]) {
+  for (const [label, query] of [['10-minute countdown', '']]) {
     await T(label, async () => {
       const { ctx, page } = await openApp(browser, base + query);
       try {
