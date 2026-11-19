@@ -358,7 +358,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 
 /* ================= summary ================= */
 #summary-view.active {
-  display: grid; place-items: center; min-height: 100%;
+  display: grid; place-items: center; min-height: 100vh; min-height: 100dvh;
   padding-block: 24px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));

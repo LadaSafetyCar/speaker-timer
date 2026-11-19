@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you deploy so old caches are cleared.
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = `speaker-timer-${VERSION}`;
 const SHELL = [
   './',

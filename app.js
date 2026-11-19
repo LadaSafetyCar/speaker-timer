@@ -304,6 +304,14 @@ function stopTimer() {
     save(); renderAgenda();
   }
   setPhase('ready');
+  // Simple mode is a plain countdown: Stop just returns the clock to its start time.
+  // The results window (with Resume / Restart) is for Conference mode, where times are recorded.
+  if (run.slotIndex == null) {
+    run.stopped = false; run.startAt = 0;
+    renderReady();
+    toast(`Stopped after ${fmt(used)}`);
+    return;
+  }
   showSummary(used);
 }
 
