@@ -296,6 +296,7 @@ function startTimer({ min, max, label, slotIndex }) {
   $('paused-badge').hidden = true;
   setPauseIcon(false);
   show('timer-view');
+  document.documentElement.classList.add('timer-on');
   enterFullscreen();
   requestWakeLock();
   render();
@@ -314,9 +315,10 @@ function render() {
   }
   const sig = signalFor(el, run.t);
   if (sig !== run.lastSig) {
-    const tv = $('timer-view');
-    tv.classList.remove('s-green', 's-amber', 's-red', 's-bell');
-    if (sig !== 'idle') tv.classList.add('s-' + sig);
+    for (const el of [$('timer-view'), document.documentElement]) {
+      el.classList.remove('s-green', 's-amber', 's-red', 's-bell');
+      if (sig !== 'idle') el.classList.add('s-' + sig);
+    }
     run.lastSig = sig;
   }
 }
@@ -368,6 +370,7 @@ function stopTimer() {
   releaseWakeLock();
   exitFullscreen();
   $('timer-view').classList.remove('s-green', 's-amber', 's-red', 's-bell');
+  document.documentElement.classList.remove('timer-on', 's-green', 's-amber', 's-red', 's-bell');
 
   if (run.slotIndex != null && state.agenda[run.slotIndex]) {
     run.prevUsed = run.prevUsedAtStart;
@@ -408,6 +411,7 @@ $('resume-btn').addEventListener('click', () => {
   }
   run.lastShown = ''; run.lastSig = '';
   show('timer-view');
+  document.documentElement.classList.add('timer-on');
   enterFullscreen();
   requestWakeLock();
   render();

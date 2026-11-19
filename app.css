@@ -221,6 +221,16 @@ button, input { font: inherit; color: inherit; }
 }
 
 /* ---------- timer (speaker-facing, fixed palette) ---------- */
+/* On an installed iPad the home-indicator strip lies outside the fixed timer box and shows
+   the root background, so the root takes the signal colour too. */
+html.timer-on { background: var(--sig-idle); }
+html.timer-on body { background: transparent; }
+html.timer-on.s-green { background: var(--sig-green); }
+html.timer-on.s-amber { background: var(--sig-amber); }
+html.timer-on.s-red   { background: var(--sig-red); }
+html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
+@keyframes bell-root { 0% { background: var(--sig-red); } 50% { background: var(--sig-idle); } }
+@media (prefers-reduced-motion: reduce) { html.timer-on.s-bell { animation-duration: 2s; } }
 #timer-view {
   position: fixed; inset: 0; z-index: 5;
   background: var(--sig-idle); color: var(--on-idle);
