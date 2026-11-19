@@ -7,7 +7,7 @@ It is plain HTML, CSS and JavaScript. There is no build step, and it works offli
 ## Features
 
 - **Opens on the clock.** The start-up screen is the speaker-facing clock, ready to go. Everything else lives behind the **gear (Settings)** in the top-right corner, which hides while a timer runs.
-- **Big clock.** A condensed bold face is fitted to the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits.
+- **Big clock.** The digits are sized to fill the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits. Each digit sits in a fixed-width slot, so the clock never shifts sideways as it counts.
 - **Controls** sit bottom-right, with the main action rightmost and away from the clock:
   - Before a run there is only one button, **Start**.
   - During a run, **Simple mode** works like the iPhone timer: **Stop** (back to the start time) and **Pause/Resume**.
@@ -61,6 +61,7 @@ Tourism Australia branding follows the brand guidelines, using the "horizon line
   - Light mode uses the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Sea Country Dark rule under the title. Dark mode uses the keyline logo.
   - Buttons use **Sea Country Dark (#0D6E9C)**. White text on it is rated AA in the brand's accessibility chart.
 - **Launch screens:** the keyline logo on the clock's dark background.
+- **Typefaces:** the brand's Google fallback fonts, **Poppins** for text and the clock and **Libre Baskerville** for headings. The corporate typefaces are deliberately not used. The Windows fallbacks named in the guidelines (Century Gothic, Georgia) are listed as backups.
 - **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them.
 
 The logo files are Tourism Australia brand assets. Use them only as the brand guidelines allow.
@@ -118,5 +119,5 @@ manifest.webmanifest  PWA metadata
 icons/                app icons
 splash/               iPad launch screens (with logo)
 brand/                Tourism Australia logo files
-fonts/                Barlow and Barlow Condensed (SIL Open Font License), self-hosted for offline use
+fonts/                Poppins and Libre Baskerville (SIL Open Font License), self-hosted for offline use
 ```

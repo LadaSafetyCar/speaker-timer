@@ -1,9 +1,13 @@
 /* Layout: the start-up screen is the clock itself, a full-bleed signal board whose whole
    surface is the green/amber/red light. Settings is a centred work column behind a gear. */
 
-@font-face { font-family: "Barlow"; font-weight: 400; font-display: swap; src: url("fonts/barlow-400.woff2") format("woff2"); }
-@font-face { font-family: "Barlow"; font-weight: 600; font-display: swap; src: url("fonts/barlow-600.woff2") format("woff2"); }
-@font-face { font-family: "Barlow Condensed"; font-weight: 700; font-display: block; src: url("fonts/barlow-condensed-700.woff2") format("woff2"); }
+/* Tourism Australia's Google fallback typefaces (brand guidelines): Poppins for text and
+   numbers, Libre Baskerville for headings. Self-hosted so the app works offline.
+   Windows fallbacks from the same guidelines: Century Gothic and Georgia. */
+@font-face { font-family: "Poppins"; font-weight: 400; font-display: swap; src: url("fonts/poppins-400.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 600; font-display: block; src: url("fonts/poppins-600.woff2") format("woff2"); }
+@font-face { font-family: "Poppins"; font-weight: 700; font-display: swap; src: url("fonts/poppins-700.woff2") format("woff2"); }
+@font-face { font-family: "Libre Baskerville"; font-weight: 400 700; font-display: swap; src: url("fonts/libre-baskerville.woff2") format("woff2"); }
 
 :root {
   /* surfaces (light) */
@@ -33,8 +37,9 @@
   --brand-sea: #36a9c7;         /* Sea Country – Mid: accent line on the dark clock screen */
   --brand-sea-dark: #0d6e9c;    /* Sea Country – Dark: accent on light screens */
   /* type */
-  --font-ui: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-clock: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-ui: "Poppins", "Century Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --font-clock: "Poppins", "Century Gothic", system-ui, sans-serif;
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) {
@@ -103,8 +108,8 @@ button, input { font: inherit; color: inherit; }
 .mmss input.mm { --digits: 2.4ch; }
 .secs input { --digits: 3.2ch; }
 .mmss span, .secs span { color: var(--muted); font-weight: 600; }
-.mmss.big input, .secs.big input { font: 700 2rem/1 var(--font-clock); --padx: 8px; padding-block: 8px; }
-.mmss.big span, .secs.big span { font: 700 1.6rem/1 var(--font-clock); }
+.mmss.big input, .secs.big input { font: 600 1.7rem/1 var(--font-clock); --padx: 8px; padding-block: 10px; }
+.mmss.big span, .secs.big span { font: 600 1.4rem/1 var(--font-clock); }
 
 /* ================= main clock screen (fixed palette) ================= */
 /* On an installed iPad the home-indicator strip lies outside the fixed box and shows
@@ -173,17 +178,22 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 
 .clock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 #clock-text {
-  font-family: var(--font-clock); font-weight: 700;
-  font-variant-numeric: tabular-nums lining-nums;
+  font-family: var(--font-clock); font-weight: 600;
   line-height: .78;           /* digits have no descenders: trim the box to the figures */
-  letter-spacing: -0.01em; white-space: nowrap;
+  white-space: nowrap;
   font-size: 40vw;            /* replaced by fitClock() */
   padding-top: .02em;
 }
+/* Poppins digits differ in width, so each sits in a fixed slot and the clock never shifts. */
+#clock-text .cd, #clock-text .cc { display: inline-block; text-align: center; }
+#clock-text .cd { width: .66em; }
+#clock-text .cc { width: .3em; }
+#clock-text .to-r { text-align: right; }
+#clock-text .to-l { text-align: left; }
 
 .ready-info {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; min-width: 0;
-  font: 700 clamp(1.05rem, 2vw, 1.35rem)/1.2 var(--font-clock); letter-spacing: .02em;
+  font: 600 clamp(1rem, 1.8vw, 1.25rem)/1.2 var(--font-clock);
   font-variant-numeric: tabular-nums; opacity: .85; padding-bottom: 14px;
 }
 .ready-info span { display: inline-flex; align-items: center; gap: 7px; }
@@ -243,7 +253,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 #settings-view[data-mode="conference"] .simple-only { display: none; }
 
 .settings-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.settings-head h1 { margin: 14px 0 0; font: 700 2.4rem/1 var(--font-clock); letter-spacing: .01em; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.settings-head h1 { margin: 14px 0 0; font: 400 2.2rem/1.1 var(--font-display); display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .settings-head .app-name { font: 600 1rem/1 var(--font-ui); color: var(--muted); letter-spacing: 0; }
 .brand-mark img { display: block; height: 52px; width: auto; }
 .accent-rule { display: block; width: 64px; height: 4px; border-radius: 2px; background: var(--brand-sea-dark); margin-top: 12px; }
@@ -286,7 +296,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
 }
 @media (hover: hover) { .recent:hover { border-color: var(--muted); } }
 .recent.current { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-.recent .r-times { font: 700 1.35rem/1 var(--font-clock); font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 12px; }
+.recent .r-times { font: 600 1.15rem/1 var(--font-clock); font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 12px; }
 .recent .r-times span { display: inline-flex; align-items: center; gap: 5px; }
 .recent .dot { width: 9px; height: 9px; }
 .recent .r-dir { font-size: .85rem; color: var(--muted); }
@@ -366,7 +376,7 @@ html.timer-on.s-bell  { animation: bell-root 1s steps(1, end) infinite; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .summary-card { width: min(540px, 100%); text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px 24px; }
-.sum-time { font: 700 clamp(5rem, 22vw, 9rem)/.9 var(--font-clock); font-variant-numeric: tabular-nums; }
+.sum-time { font: 600 clamp(4.5rem, 18vw, 8rem)/1 var(--font-clock); font-variant-numeric: tabular-nums; }
 .verdict { font-size: 1.15rem; font-weight: 600; margin: 12px 0 18px; }
 .verdict.v-under { color: var(--muted); }
 .verdict.v-ok { color: var(--c-green-text); }

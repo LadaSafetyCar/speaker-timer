@@ -1,5 +1,5 @@
 // Offline support. Bump VERSION whenever you deploy so old caches are cleared.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = `speaker-timer-${VERSION}`;
 const SHELL = [
   './',
@@ -7,9 +7,10 @@ const SHELL = [
   './app.css',
   './app.js',
   './manifest.webmanifest',
-  './fonts/barlow-400.woff2',
-  './fonts/barlow-600.woff2',
-  './fonts/barlow-condensed-700.woff2',
+  './fonts/poppins-400.woff2',
+  './fonts/poppins-600.woff2',
+  './fonts/poppins-700.woff2',
+  './fonts/libre-baskerville.woff2',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',

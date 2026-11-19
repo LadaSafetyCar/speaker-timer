@@ -170,9 +170,15 @@ function setPhase(p) {
 
 function setClock(text) {
   const el = $('clock-text');
-  if (el.textContent === text) return;
-  const lenChanged = el.textContent.length !== text.length;
-  el.textContent = text;
+  if (el.dataset.text === text) return;
+  const lenChanged = (el.dataset.text || '').length !== text.length;
+  el.dataset.text = text;
+  el.setAttribute('aria-label', text);
+  // Minutes hug the colon from the left, seconds from the right, so a narrow "1" leaves its
+  // spare space at the outer edge instead of a gap in the middle.
+  const colon = text.indexOf(':');
+  el.innerHTML = [...text].map((ch, i) => ch === ':' ? '<span class="cc">:</span>'
+    : `<span class="cd ${i < colon ? 'to-r' : 'to-l'}">${ch}</span>`).join('');
   if (lenChanged) fitClock();
 }
 
@@ -208,13 +214,9 @@ function moveSlot(step) {
 function fitClock() {
   if (!main.classList.contains('active')) return;
   const txt = $('clock-text');
-  const probe = document.createElement('span');
-  probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:100px;line-height:.78;font-weight:700;font-variant-numeric:tabular-nums lining-nums;';
-  probe.style.fontFamily = getComputedStyle(txt).fontFamily;
-  probe.textContent = txt.textContent.replace(/\d/g, '0');
-  document.body.appendChild(probe);
-  const w = probe.getBoundingClientRect().width / 100;  // width in em
-  probe.remove();
+  const text = txt.dataset.text || '0:00';
+  // width in em from the fixed digit and colon slots (see #clock-text .cd / .cc)
+  const w = [...text].reduce((sum, ch) => sum + (ch === ':' ? 0.3 : 0.66), 0);
   const byWidth = (window.innerWidth * 0.94) / w;
   const byHeight = (window.innerHeight - 170) / 0.78;  // room for the top label and bottom controls
   txt.style.fontSize = Math.floor(Math.min(byWidth, byHeight)) + 'px';
