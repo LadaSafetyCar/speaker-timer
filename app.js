@@ -158,6 +158,7 @@ const run = { phase: 'ready', cfg: null, t: null, dir: 'down', label: '', slotIn
 function setPhase(p) {
   run.phase = p;
   main.dataset.phase = p;
+  main.dataset.mode = state.mode;
   const sp = $('startpause-btn');
   const label = p === 'running' ? 'Pause' : p === 'paused' ? 'Resume' : 'Start';
   sp.setAttribute('aria-label', label);
@@ -176,6 +177,7 @@ function setClock(text) {
 }
 
 function renderReady() {
+  main.dataset.mode = state.mode;
   const c = currentCfg();
   setClock(!c || state.dir === 'up' ? '0:00' : fmt(c.max));
   applySignal('idle'); run.lastSig = '';
@@ -279,7 +281,7 @@ function disarmReset() {
   $('reset-btn').querySelector('.ctl-text').textContent = 'Reset';
 }
 function resetTimer() {
-  if (run.phase === 'ready') return;
+  if (run.phase === 'ready' || state.mode === 'simple') return;   // Simple mode has no Reset
   if (!resetArmed) {
     $('reset-btn').classList.add('armed');
     $('reset-btn').querySelector('.ctl-text').textContent = 'Tap again';

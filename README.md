@@ -10,9 +10,11 @@ It is plain HTML, CSS and JavaScript. There is no build step, and it works offli
 - **Big clock.** A condensed bold face is fitted to the screen width or height (whichever runs out first) every time the digit count changes. Landscape gives the biggest digits.
 - **Controls** sit bottom-right, with the main action rightmost and away from the clock:
   - Before a run there is only one button, **Start**.
-  - During a run there are three: **Reset**, **Stop**, and **Pause/Resume**. They fade to half strength so they don't distract the speaker.
+  - During a run, **Simple mode** works like the iPhone timer: **Stop** (back to the start time) and **Pause/Resume**.
+  - **Conference mode** adds **Reset**, so there are three: **Reset**, **Stop** and **Pause/Resume**.
+  - The controls fade to half strength while the clock runs, so they don't distract the speaker.
   - **Reset** needs a second tap within 3 s, so a stray touch can't wipe a speech in progress. It returns the clock to its start time without recording anything.
-  - **Stop** ends the run and shows the summary, where **Resume timer** undoes an accidental stop.
+  - **Stop** in Conference mode records the time and shows the results, where **Resume timer** undoes an accidental stop. In Simple mode it returns straight to the start time.
   - **Keyboard:** Space starts or pauses, Esc stops, R resets, and ← → change slot.
 - **Count down or count up** (Settings).
   - Count down starts at the red (max) time and **holds at 0:00** once the speaker reaches it, while the colours carry on.
@@ -53,11 +55,11 @@ Tourism Australia branding follows the brand guidelines, using the "horizon line
 
 - **Clock screen while waiting:**
   - The keyline logo (`brand/ta-logo-keyline.svg`), made for dark backgrounds, sits centred at the top.
-  - A solid **Desert Country Mid (#F95A00)** line runs along the bottom edge. It is solid because the guidelines don't allow gradients or effects.
+  - A solid **Sea Country Mid (#36A9C7)** line runs along the bottom edge. It is solid because the guidelines don't allow gradients or effects, and blue because it stays clearly apart from the green, amber and red signals.
   - Both hide on Start, so the speaker sees only the signal colours.
 - **Settings:**
-  - Light mode uses the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Desert Country Mid rule under the title. Dark mode uses the keyline logo.
-  - Buttons use **Bush Country Dark (#054A29)**. White text on it is rated AAA in the brand's accessibility chart.
+  - Light mode uses the full-colour Desert logo (`brand/ta-logo-desert.svg`), with a short Sea Country Dark rule under the title. Dark mode uses the keyline logo.
+  - Buttons use **Sea Country Dark (#0D6E9C)**. White text on it is rated AA in the brand's accessibility chart.
 - **Launch screens:** the keyline logo on the clock's dark background.
 - **Signal colours** (green, amber, red, flashing) are never replaced by brand colours, so the speaker can't confuse them.
 
